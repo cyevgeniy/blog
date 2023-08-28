@@ -1,0 +1,1652 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="SQL tutorial " />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/blog/sqltutorial/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        SQL tutorial 
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+        	<div class="header">
+	<span class="header__item ">Ychbn</span>
+</div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> SQL tutorial </h1>
+        	
+
+            
+        		<h2>Table of contents</h2>
+        			<nav class="toc">
+                <ol>
+                    
+                    <li><a href="#info-for-russian-speaking-readers">Info for russian-speaking readers</a>
+            		</li>
+
+                    <li><a href="#what-is-sql">What is SQL</a>
+            		</li>
+
+                    <li><a href="#sql-dialects">SQL dialects</a>
+            		</li>
+
+                    <li><a href="#sql-features">SQL features</a>
+            		</li>
+
+                    <li><a href="#why-learn-sql">Why learn SQL</a>
+            		</li>
+
+                    <li><a href="#dml%2C-ddl">DML, DDL</a>
+            		</li>
+
+                    <li><a href="#sqlite-installation">SQLite installation</a>
+            
+                <ol>
+                    
+                    <li><a href="#linux">Linux</a>
+            
+                <ol>
+                    
+                    <li><a href="#debian-based(-debian%2C-ubuntu%2C-and-others)">Debian-based( Debian, Ubuntu, and others)</a>
+            		</li>
+
+                    <li><a href="#fedora">Fedora</a>
+            		</li>
+
+                    <li><a href="#arch-linux">Arch linux</a>
+            		</li>
+                </ol>
+            		</li>
+
+                    <li><a href="#windows">Windows</a>
+            		</li>
+                </ol>
+            		</li>
+
+                    <li><a href="#tables">Tables</a>
+            		</li>
+
+                    <li><a href="#database-file-creation">Database file creation</a>
+            		</li>
+
+                    <li><a href="#creating-test-schema">Creating test schema</a>
+            		</li>
+
+                    <li><a href="#summary">Summary</a>
+            		</li>
+
+                    <li><a href="#first-select">First select</a>
+            		</li>
+
+                    <li><a href="#sqlite-prompt-configuration">Sqlite prompt configuration</a>
+            		</li>
+
+                    <li><a href="#select-query-basics">Select query basics</a>
+            		</li>
+
+                    <li><a href="#table-aliases">Table aliases</a>
+            		</li>
+
+                    <li><a href="#column-aliases">Column aliases</a>
+            		</li>
+
+                    <li><a href="#rows-filtering">Rows filtering</a>
+            
+                <ol>
+                    
+                    <li><a href="#grouping-conditions">Grouping conditions</a>
+            		</li>
+                </ol>
+            		</li>
+
+                    <li><a href="#export-data-to-csv">Export data to CSV</a>
+            		</li>
+
+                    <li><a href="#summary-1">Summary</a>
+            		</li>
+
+                    <li><a href="#basic-sorting">Basic sorting</a>
+            		</li>
+
+                    <li><a href="#sorting-by-multiple-columns">Sorting by multiple columns</a>
+            		</li>
+
+                    <li><a href="#sorting's-voodoo-techniques">Sorting's voodoo techniques</a>
+            		</li>
+
+                    <li><a href="#summary-2">Summary</a>
+            		</li>
+
+                    <li><a href="#left-join">LEFT JOIN</a>
+            		</li>
+
+                    <li><a href="#right-join">RIGHT JOIN</a>
+            		</li>
+
+                    <li><a href="#join">JOIN</a>
+            		</li>
+
+                    <li><a href="#using-joins-with-more-than-two-tables">Using joins with more than two tables</a>
+            		</li>
+
+                    <li><a href="#using-subqueries">Using subqueries</a>
+            		</li>
+
+                    <li><a href="#more-on-conditions-in-joins">More on conditions in joins</a>
+            		</li>
+
+                    <li><a href="#compound-conditions">Compound conditions</a>
+            		</li>
+
+                    <li><a href="#you-can-use-any-condition-you-want">You can use any condition you want</a>
+            		</li>
+
+                    <li><a href="#summary-3">Summary</a>
+            		</li>
+
+                    <li><a href="#union%2C-except%2C-intersect">UNION, EXCEPT, INTERSECT</a>
+            
+                <ol>
+                    
+                    <li><a href="#union">UNION</a>
+            
+                <ol>
+                    
+                    <li><a href="#union-all">UNION ALL</a>
+            		</li>
+                </ol>
+            		</li>
+
+                    <li><a href="#except">EXCEPT</a>
+            		</li>
+
+                    <li><a href="#intersect">INTERSECT</a>
+            		</li>
+                </ol>
+            		</li>
+
+                    <li><a href="#subqueries">Subqueries</a>
+            
+                <ol>
+                    
+                    <li><a href="#subqueries-in-a-select-clause">Subqueries in a select clause</a>
+            		</li>
+
+                    <li><a href="#correlated-subqueries">Correlated subqueries</a>
+            		</li>
+
+                    <li><a href="#subqueries-as-tables">Subqueries as tables</a>
+            		</li>
+                </ol>
+            		</li>
+                </ol>
+            </nav>
+            
+
+        	<p>This is the small tutorial about SQL.
+I hope it will help you to solve problems and make
+it easy for you to understand SQL.</p>
+<p><strong>Note:</strong> Work in progress. ☜(ﾟヮﾟ☜)</p>
+<h3 id="info-for-russian-speaking-readers" tabindex="-1">Info for russian-speaking readers</h3>
+<p>There's also a book that was generated from one of my previous sites,
+it's about SQL in Oracle database.</p>
+<p><a class="button button--blue" href="/static/book.pdf">Download</a></p>
+<h2 id="what-is-sql" tabindex="-1">What is SQL</h2>
+<p>SQL, or <em>Structure Query Language</em> is the main tool for interaction with
+relational database management systems(RDBMS).</p>
+<p>SQL is used to:</p>
+<ul>
+<li>Retrieve data from DB</li>
+<li>Save data to DB</li>
+<li>Perform changes in existing data</li>
+</ul>
+<h2 id="sql-dialects" tabindex="-1">SQL dialects</h2>
+<p>SQL is standardized, but who cares?</p>
+<p>There are many RDBMS, and as a rule, each of them has its
+differences in SQL implementation - some of them use different syntax for the same
+things, some of them have or have not some features, but generally, if you
+know one SQL dialect, it will be not so hard to switch to another dialect when
+it will be needed.</p>
+<p>In this tutorial, we will use SQLite database, since it's easy to install on most
+platforms, and also it supports most of the standard SQL.</p>
+<h2 id="sql-features" tabindex="-1">SQL features</h2>
+<p>A few words about what is so special in SQL.</p>
+<p>Unlike many other programming languages, such as Java, Pascal or JavaScript,
+in which programming is performed by describing <em>how</em> to do things, in SQL we
+need to describe <em>what</em> we need to do, or <em>what</em> result we want, but generally,
+we can't tell the database how to achieve this result.</p>
+<h2 id="why-learn-sql" tabindex="-1">Why learn SQL</h2>
+<p>As told, SQL is the main tool to talk with RDBMS.</p>
+<p>When some program or service want to get, save or change data in a database,
+it does this by using SQL. Even if SQL is not used directly, and for interaction
+with the database some framework is used(such as Hibernate in Java), under the hood this
+framework generates SQL, which is then passed to the database.</p>
+<h2 id="dml%2C-ddl" tabindex="-1">DML, DDL</h2>
+<p>SQL commands can be divided into two groups - <em>DML</em> and <em>DDL</em>.</p>
+<p>Except for DML and DDL, there are also <em>DCL</em> and <em>TCL</em> groups, but we don't touch them in this tutorial.</p>
+<p>DML stands for <em>Data Manipulation Language</em>. It consists of commands which can change <strong>or retrieve  already existing data</strong>.
+By changing we mean also insertion of new data and deletion of old data.</p>
+<p>So, here are the list of DML commands:</p>
+<ul>
+<li>SELECT</li>
+<li>INSERT</li>
+<li>UPDATE</li>
+<li>DELETE</li>
+<li>MERGE</li>
+</ul>
+<p>Note that <code>SELECT</code> command also related to DML.</p>
+<p>DDL is stands for <em>Data Definition Language</em>. It consists from commands which are responsible for database objects' creation or modification.</p>
+<p>These commands are related to DDL:</p>
+<ul>
+<li>CREATE</li>
+<li>RENAME</li>
+<li>ALTER</li>
+<li>DROP</li>
+<li>RENAME</li>
+<li>TRUNCATE</li>
+<li>COMMENT</li>
+</ul>
+<p>In this tutorial, we will mostly concentrate on DML commands, but we will use
+DDL for creating our database schema.</p>
+<h2 id="sqlite-installation" tabindex="-1">SQLite installation</h2>
+<h3 id="linux" tabindex="-1">Linux</h3>
+<p>If you Llinux system, probably SQLite is already installed.</p>
+<p>First, try to type into terminal following command:</p>
+<pre><code class="language-bash">sqlite3 -version
+</code></pre>
+<p>If you see something like this, SQLite is already installed:</p>
+<pre><code>3.31.1 2020-01-27 19:55:54 3bfa9cc97da10598521b342961df8f5f68c7388fa117345eeb516eaa837balt1
+</code></pre>
+<p>To install SQLite, we should search for <code>sqlite</code> package. Since there are so many
+different Linux distributives and theirs package managers, it's hard to tell what exactly
+command you need to type, but we will list instructions for most popular linux distrubutives.</p>
+<h4 id="debian-based(-debian%2C-ubuntu%2C-and-others)" tabindex="-1">Debian-based( Debian, Ubuntu, and others)</h4>
+<pre><code class="language-bash">sudo apt-get install sqlite3
+</code></pre>
+<h4 id="fedora" tabindex="-1">Fedora</h4>
+<pre><code class="language-bash">sudo dnf install sqlite
+</code></pre>
+<h4 id="arch-linux" tabindex="-1">Arch linux</h4>
+<pre><code class="language-bash">sudo pacman -S sqlite
+</code></pre>
+<h3 id="windows" tabindex="-1">Windows</h3>
+<p>You can download precompiled binaries from the official
+<a href="https://www.sqlite.org/download.html">site</a>. Precompiled
+binaries for Linux also can be downloaded from there.</p>
+<h2 id="tables" tabindex="-1">Tables</h2>
+<p>In RDMS data is stored in the tables. Tables are the key objects, with
+which we have to work in SQL.</p>
+<p>Tables in the databases don't differ much from the tables with which you
+already familiar from school - they consist of <em>columns</em> and <em>rows</em>.
+Each column in a table has its own name and type. Generally speaking,
+there are five types of data that we can store in the database:</p>
+<ul>
+<li>Numbers</li>
+<li>Text</li>
+<li>Dates</li>
+<li>Binary data(images, pdf files and so on)</li>
+<li>Nothing</li>
+</ul>
+<p>These types are not related to any concrete database engine. Moreover, many
+databases have much more types, but those types don't bring any new kind of
+data that we can store - they just split each of our types into more small
+subtypes. For example, the Oracle database has a <code>DATE</code> type( accurate to seconds).
+Also, it has the <code>TIMESTAMP</code> type, which is also used to store dates,
+but with more precision(accurate to parts of second).</p>
+<p><strong>WTF is NULL?</strong></p>
+<p>We need to pay attention to the last item on our list. What does it mean - Nothing?
+We can think about it as just an empty column in a row. But the math
+guy who have created relational theory did not like empty columns, and he said that
+all columns must have a value. But in practice, we <em>need</em> empty columns sometimes,
+so database developers have created a specific value which means that columns with
+this value don't have a value. And this value is <strong>NULL</strong>. We will talk about
+nulls later, don't worry, anything that we need to know for now is that this
+value means <em>nothing</em>, <em>empty</em>, <em>no value</em> and so on.</p>
+<h2 id="database-file-creation" tabindex="-1">Database file creation</h2>
+<p>Let's create SQLite database which we will use to keep our
+database structure for later use and experiments. In terminal,
+type following command:</p>
+<pre><code>sqlite3
+</code></pre>
+<p>Right after this we will see something like this:</p>
+<pre><code>SQLite version 3.31.1 2020-01-27 19:55:54
+Enter &quot;.help&quot; for usage hints.
+Connected to a transient in-memory database.
+Use &quot;.open FILENAME&quot; to reopen on a persistent database.
+sqlite&gt; 
+</code></pre>
+<p>Wee see that now we are connected to <em>in-memory</em> database, what
+means that if we quit from SQLite command prompt or shutdown the computer,
+all our data will be lost.</p>
+<p>What we want is to save the database to a file so we can
+use it later without losing our data. To do this, <code>.save</code> command is used:</p>
+<pre><code class="language-foo">sqlite&gt; .save testdb.db
+</code></pre>
+<p>After execution of the above command, file named <code>testdb.db</code>
+will be created in the current directory.</p>
+<p>To quit SQLite command interpreter, use <code>.quit</code> command.</p>
+<h2 id="creating-test-schema" tabindex="-1">Creating test schema</h2>
+<p>Let's create our tables and fill them with test data.
+We will use this schema throughout the whole SQL tutorial.</p>
+<p>Our database structure represents an imaginary shop service, which allows
+users to create some orders, put some items into those
+orders and close them. Each order can be in one of the
+next states: <em>Closed</em> and <em>Waiting</em>.</p>
+<pre><code class="language-foo">create table users(
+    id number primary key,
+	login text,
+	is_active number
+);
+
+create table orders(
+	id number primary key,
+	user_id number,
+	order_date text,
+	order_num number,
+	status number
+);
+	
+create table items(
+	id number,
+	item_name text
+);
+
+create table order_items(
+	id number,
+	order_id number,
+	item_id number,
+	quantity number
+);create table users(
+    id number primary key,
+	login text,
+	is_active number
+);
+
+
+insert into users
+values(1, 'JohnDoe', 1);
+
+insert into users
+values(2, 'MrWinner', 1);
+
+insert into users
+values(3, 'Alex', 1);
+
+insert into users
+values(4, 'Barbie', 1);
+
+insert into users
+values(5, 'Lisa', 1);
+
+insert into users
+values(6, 'Stone', 0);
+
+create table items(
+	id number primary key,
+	item_name text,
+	price number
+);
+
+insert into items
+values(1, 'Microwave', 300);
+
+insert into items
+values(2, 'Mobile phone', 350);
+
+insert into items
+values(3, 'Nintendo switch', 400);
+
+insert into items
+values(4, 'TV', 1000);
+
+insert into items
+values(5, 'Laptop', 1500);
+
+insert into items
+values(6, 'Washer', 700);
+
+create table orders(
+	id number primary key,
+	user_id number,
+	order_date text,
+	order_num number,
+	status text,
+	constraint orders_users_fk foreign key(user_id)
+	    references users(id)
+);
+
+insert into orders
+values(1, 2, '2021-10-11', 32, 'CLOSED');
+	
+insert into orders
+values(2, 2, '2021-08-15', 230, 'WAITING');
+
+insert into orders
+values(3, 4, '2019-04-24', 39, 'CLOSED');
+
+insert into orders
+values(4, 5, '2019-04-24', 39, 'WAITING');
+
+create table order_items(
+	id number,
+	order_id number,
+	item_id number,
+	quantity number,
+	constraint order_items_order_fk foreign key(order_id)
+	    references orders(id),
+	constraint order_items_item_fk foreign key(item_id)
+	    references items(id)
+);
+
+
+insert into order_items
+values(1, 1, 4, 1);
+
+insert into order_items
+values(2, 1, 6, 1);
+
+insert into order_items
+values(3, 2, 5, 2);
+
+insert into order_items
+values(4, 3, 3, 4);
+
+insert into order_items
+values(5, 3, 2, 4);
+</code></pre>
+<p>Save this query to a file, named, for example, <code>schema.sql</code>.
+Now, we need to open our database file:</p>
+<pre><code class="language-bash">sqlite3 testdb.db
+</code></pre>
+<p>To execute sql script, in SQLite command prompt, we need
+to use command <code>read</code>:</p>
+<pre><code class="language-foo">sqlite&gt; .read schema.sql
+</code></pre>
+<p>This command executes our script, but to be able to use
+test data later, we need to save changes back to file:</p>
+<pre><code class="language-foo">sqlite&gt; .save
+</code></pre>
+<p>Let's check which tables are in the database:</p>
+<pre><code class="language-foo">sqlite&gt;.tables
+</code></pre>
+<p>Output:</p>
+<pre><code>items        order_items  orders       users 
+</code></pre>
+<p>So, now we have the database file, called <code>testdb.db</code>,
+which contains tables with which we will work later.
+In the next chapter we will look at how to retrieve
+information from tables and how we can save it to external
+file using SQLite command prompt. Now, take some time to relax;
+here is a picture to help you do this:</p>
+<p><img src="/img/sqltut/relax_0.png" alt="Relax image"></p>
+<h2 id="summary" tabindex="-1">Summary</h2>
+<ul>
+<li>SQL is the main language to talk with RDBMS</li>
+<li>SQL consists from DDL,  DML, DCL and TCL</li>
+<li>There are many SQL dialects</li>
+<li><code>Null</code> is specific value that determines empty value</li>
+<li>To create new database file, we use command <code>sqlite3 dbfile.db</code></li>
+<li>To execute a sql script, <code>.read sqlfile.sql</code> command is used</li>
+<li>To save changes back to file, <code>.save</code> command is used</li>
+<li><code>.tables</code> command shows list of tables in the current database</li>
+</ul>
+<p>In this chapter, we gonna look at how to retrieve data
+from the database.</p>
+<h2 id="first-select" tabindex="-1">First select</h2>
+<p>Let's connect to our database, which we have created previously:</p>
+<pre><code class="language-bash">sqlite3 testdb.db
+</code></pre>
+<p>To select data from database tables, <code>SELECT</code> command is used.
+It is probably the most frequently usable command in SQL, and we will use
+this command all the time.</p>
+<p>Let's see what data we have in the <code>users</code> table:</p>
+<pre><code class="language-foo">sqlite&gt; select *
+   ...&gt; from users;
+</code></pre>
+<p>Result:</p>
+<pre><code>1|JohnDoe|1
+2|MrWinner|1
+3|Alex|1
+4|Barbie|1
+5|Lisa|1
+6|Stone|0
+</code></pre>
+<p>Here we have just ran our first SQL query, which retrieves all data
+from the <code>users</code> table. One important thing - a sql query is executed
+after the first semicolon.</p>
+<p>Ok, we have some results, but they look very ugly. We can't see table
+columns, and here is no any formatting. Before we dive into the
+structure of <code>SELECT</code> query, let's tweak SQLite command prompt, so
+that query results will look more sexy.</p>
+<h2 id="sqlite-prompt-configuration" tabindex="-1">Sqlite prompt configuration</h2>
+<p>We gonna add options for displaying column headers and for
+aligning columns content. To do this,  we need to create
+a file named <code>.sqliterc</code> in the home directory with the following content:</p>
+<pre><code>.headers on
+.mode column
+</code></pre>
+<p>Now, if we run our query again, result will look much better:</p>
+<pre><code>id          login       is_active 
+----------  ----------  ----------
+1           JohnDoe     1         
+2           MrWinner    1         
+3           Alex        1         
+4           Barbie      1         
+5           Lisa        1         
+6           Stone       0
+</code></pre>
+<h2 id="select-query-basics" tabindex="-1">Select query basics</h2>
+<p>We have ran next query:</p>
+<pre><code class="language-foo">select *
+from users
+</code></pre>
+<p>In this query we have just said: &quot;Database, please,
+give me all rows and all columns from the <code>users</code> table.</p>
+<p>In select queries, asterisk means &quot;All columns&quot;. If we want
+to retrieve some specific columns, we need to list them. Let's get
+only login names:</p>
+<pre><code class="language-foo">select login
+from users
+</code></pre>
+<p>If we want to select a few columns, they should be separated by
+comma:</p>
+<pre><code class="language-foo">select login, is_active
+from users
+</code></pre>
+<h2 id="table-aliases" tabindex="-1">Table aliases</h2>
+<p>It is a good practice to use aliases in SQL queries.
+By using table aliases, we can say from which table
+column should be used. Table aliases are separated
+by space from the table name:</p>
+<pre><code class="language-foo">select u.login, u.is_active
+from users u
+</code></pre>
+<p>Now it may look like as a redundant thing, but in complex
+cases, table aliases make queries much, much more readable.</p>
+<p>Table names also can be used as aliases, so if the table name
+is short, it is ok to use it as an alias:</p>
+<pre><code class="language-foo">select users.login, users.is_active
+from users
+</code></pre>
+<h2 id="column-aliases" tabindex="-1">Column aliases</h2>
+<p>Aliases can be given for selected columns, too:</p>
+<pre><code class="language-foo">select u.login user_login,
+       u.is_active is_active_flag
+from users
+</code></pre>
+<p>And now our query result looks like there are
+<code>users_login</code> and <code>is_active_flag</code> in
+the <code>users</code> table:</p>
+<pre><code>user_login  is_active_flag
+----------  --------------
+JohnDoe     1             
+MrWinner    1             
+Alex        1             
+Barbie      1             
+Lisa        1             
+Stone       0             
+</code></pre>
+<h2 id="rows-filtering" tabindex="-1">Rows filtering</h2>
+<p>Almost always we don't need all data in a table, we want to
+get rows that satisfy some conditions. For example, we may want
+only active users, only inactive users, users which logins start with
+the symbol 'A' and so on.</p>
+<p>In SQL, we specify conditions in the <code>WHERE</code> clause:</p>
+<pre><code class="language-foo">select u.*
+from users u
+where u.is_active = 1
+</code></pre>
+<pre><code>id          login       is_active 
+----------  ----------  ----------
+1           JohnDoe     1         
+2           MrWinner    1         
+3           Alex        1         
+4           Barbie      1         
+5           Lisa        1         
+</code></pre>
+<p>Here we have got only active users.</p>
+<p>When using <code>WHERE</code>, only those rows go to the result, which
+satisfy all conditions.</p>
+<p>In the <code>WHERE</code> clause, we can specify multiple conditions by using
+<code>AND</code> and <code>OR</code> keywords.</p>
+<p>Let's get information about users with nicknames &quot;MrWinner&quot; and &quot;Lisa&quot;:</p>
+<pre><code class="language-foo">select u.*
+from users u
+where u.login = 'MrWinner'
+or u.login = 'Lisa'
+</code></pre>
+<pre><code>id          login       is_active 
+----------  ----------  ----------
+2           MrWinner    1         
+5           Lisa        1         
+</code></pre>
+<p>We have used <code>OR</code> to include both rows in the result.</p>
+<p>If we use <code>AND</code>, the result will be empty:</p>
+<pre><code class="language-foo">select u.*
+from users u
+where u.login = 'MrWinner'
+and u.login = 'Lisa'
+</code></pre>
+<p>That is because there are no rows in the table which
+have values &quot;MrWinner&quot; and &quot;Lisa&quot; at the same time.</p>
+<h3 id="grouping-conditions" tabindex="-1">Grouping conditions</h3>
+<p>Let's remember school math: things between brackets are
+calculated first. Same thing with conditions in SQL
+(actually, it is  boolean logic and predicate calculations,
+but it's boring):</p>
+<pre><code class="language-foo">select u.*
+from users u
+where (is_active = 0 or login = 'Lisa') and is_active = 1
+</code></pre>
+<p>Result:</p>
+<pre><code>id          login       is_active 
+----------  ----------  ----------
+5           Lisa        1         
+</code></pre>
+<p>If we change brackets position, the result will be different:</p>
+<pre><code class="language-foo">select u.*
+from users u
+where is_active = 0 or (login = 'Lisa' and is_active = 1)
+</code></pre>
+<p>Result:</p>
+<pre><code>id          login       is_active 
+----------  ----------  ----------
+5           Lisa        1         
+6           Stone       0         
+</code></pre>
+<h2 id="export-data-to-csv" tabindex="-1">Export data to CSV</h2>
+<p>This topic is exclusively about the SQLite database feature.
+It allows you to save query results into a CSV file.</p>
+<p>Here is the how-to:</p>
+<ol>
+<li>
+<p>Turn on CSV mode:</p>
+<pre><code>sqlite&gt; .mode csv
+</code></pre>
+</li>
+<li>
+<p>Set output file:</p>
+<pre><code>sqlite&gt; .output result.csv
+</code></pre>
+<p>Here <code>result.csv</code> is the output file. It can has
+any other name.</p>
+</li>
+<li>
+<p>Execute query:</p>
+<pre><code class="language-foo">qlite&gt; select *
+   ...&gt; from users;
+</code></pre>
+</li>
+</ol>
+<p>Our result csv file now contains:</p>
+<pre><code>id,login,is_active
+1,JohnDoe,1
+2,MrWinner,1
+3,Alex,1
+4,Barbie,1
+5,Lisa,1
+6,Stone,0
+</code></pre>
+<p>Additional info about command-line features of SQLite
+can be found at <a href="https://www.sqlite.org/cli.html">Official docs</a>.</p>
+<h2 id="summary-1" tabindex="-1">Summary</h2>
+<ul>
+<li>To filter query results, WHERE clause is used</li>
+<li>To change the default calculation order, we can use brackets
+for grouping conditions</li>
+<li>In SQLite, it is easy to export data into a CSV file</li>
+</ul>
+<p>Sometimes we want to get result in specific order,
+and <code>order by</code> clause does exactly this.</p>
+<h2 id="basic-sorting" tabindex="-1">Basic sorting</h2>
+<p>Let's look at the data in the <code>orders</code> table:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num
+from orders
+</code></pre>
+<pre><code>user_id     order_date  order_num 
+----------  ----------  ----------
+2           2021-10-11  32
+2           2021-08-15  230
+4           2019-04-24  39
+5           2019-04-24  39 
+</code></pre>
+<p>We can retrieve orders info sorted by the <code>order_num</code> column:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num
+from orders
+order by order_num asc
+</code></pre>
+<p>Result:</p>
+<pre><code>user_id     order_date  order_num 
+----------  ----------  ----------
+2           2021-10-11  32
+4           2019-04-24  39
+5           2019-04-24  39
+2           2021-08-15  230 
+</code></pre>
+<p>As we can see, now orders are sorted by order number in
+ascending order. This is because we have set <em>ascending</em>
+order in the <code>order by</code> by adding the <code>asc</code> keyword.</p>
+<p>It's unnecessary to add <code>asc</code> if we want to sort rows in
+ascending order - it is the default. Next query
+is identical to the previous one:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num
+from orders
+order by order_num
+</code></pre>
+<p>To sort rows in descending order, we should add
+<code>desc</code> to <code>order by</code> clause:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num
+from orders
+order by order_num desc
+</code></pre>
+<pre><code>user_id     order_date  order_num 
+----------  ----------  ----------
+2           2021-08-15  230
+4           2019-04-24  39 
+5           2019-04-24  39 
+2           2021-10-11  32
+</code></pre>
+<h2 id="sorting-by-multiple-columns" tabindex="-1">Sorting by multiple columns</h2>
+<p>To sort rows by multiple columns, those columns
+should be separated by commas:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num
+from orders
+order by user_id desc, order_date
+</code></pre>
+<pre><code>user_id     order_date  order_num 
+----------  ----------  ----------
+5           2019-04-24  39
+4           2019-04-24  39
+2           2021-08-15  230
+2           2021-10-11  32 
+</code></pre>
+<p>Here rows come sorted by <code>userId</code> in descending order
+first, and by order date in ascending order second.
+It is observed by the fact that rows with the same
+<code>user_id</code>(where it equals to 2) sorted by <code>order_date</code>
+in ascending order.</p>
+<h2 id="sorting's-voodoo-techniques" tabindex="-1">Sorting's voodoo techniques</h2>
+<p>It is unnecessary for a column to be included into a
+select query - we can sort by column, but don't
+select it at all:</p>
+<pre><code class="language-foo">select order_date, order_num, status
+from orders
+order by user_id desc
+</code></pre>
+<pre><code>order_date  order_num   status 
+----------  ----------  ----------
+2019-04-24  39          WAITING 
+2019-04-24  39          CLOSED
+2021-10-11  32          CLOSED 
+2021-08-15  230         WAITING
+</code></pre>
+<p>Rows are sorted by the <code>user_id</code> column, as in the
+previous example, but the <code>user_id</code> column itself does not
+exist in the result set.</p>
+<p>We can sort columns by their order in <code>select</code> clause, not just
+by their name:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num, status
+from orders
+order by 1, 2 desc
+</code></pre>
+<pre><code>user_id     order_date  order_num   status
+----------  ----------  ----------  ----------
+2           2021-10-11  32          CLOSED 
+2           2021-08-15  230         WAITING
+4           2019-04-24  39          CLOSED 
+5           2019-04-24  39          WAITING
+</code></pre>
+<p>The above query is the same as the next one:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num, status
+from orders
+order by user_id, order_date desc
+</code></pre>
+<p>Such a feature can look attractive, but in practice you
+<strong>should avoid sorting by columns' order</strong>, because
+such queries may become invalid after changing column
+order. Let's demonstrate this.</p>
+<p>Suppose we have a query:</p>
+<pre><code class="language-foo">select order_date, order_num, status
+from orders
+order by 1, 2 desc
+</code></pre>
+<pre><code>order_date  order_num   status 
+----------  ----------  ----------
+2019-04-24  39          CLOSED 
+2019-04-24  39          WAITING
+2021-08-15  230         WAITING
+2021-10-11  32          CLOSED 
+</code></pre>
+<p>But some time later we decide to retrieve the <code>user_id</code>
+column as well:</p>
+<pre><code class="language-foo">select user_id, order_date, order_num, status
+from orders
+order by 1, 2 desc
+</code></pre>
+<pre><code>user_id     order_date  order_num   status
+----------  ----------  ----------  ----------
+2           2021-10-11  32          CLOSED
+2           2021-08-15  230         WAITING
+4           2019-04-24  39          CLOSED
+5           2019-04-24  39          WAITING 
+</code></pre>
+<p>Now rows come in an absolutely different order, because
+the <code>user_id</code> column is first and the <code>order_date</code> is
+second.</p>
+<h2 id="summary-2" tabindex="-1">Summary</h2>
+<ul>
+<li>
+<p><code>Order by</code> clause is used for result sorting.</p>
+</li>
+<li>
+<p>There is no need to add <code>asc</code> keyword to sort rows in
+ascending order - this value is assumed to be the default.</p>
+</li>
+<li>
+<p>It is the bad pattern to order rows by specifying columns
+order - it is better to list columns by their names.</p>
+<p>Joins are some of the most essential concepts of SQL.
+They are used for querying data from multiple tables. In
+this article we will look at <code>JOIN</code> and <code>LEFT/RIGHT JOIN</code> -
+these are all what you need to know to freely work with multiple
+tables.</p>
+</li>
+</ul>
+<h2 id="left-join" tabindex="-1">LEFT JOIN</h2>
+<p>Let's forget about tables and databases for a while, and imagine that
+we have two bags with balls of various colors. Also, let's imagine that
+one bag is placed on the left side and another bag is placed on the right
+side relating to us.</p>
+<p>Now, let's play the very simple game - we will take one random ball
+from the left bag and then we will search for all balls with the same
+colour in this bag. Then we search for balls with this colour in the
+right bag. We can write down this operation like &quot;Find all balls of color C
+in bag A, and then find all balls of color C in bag B&quot;.</p>
+<p>In SQL, we could write a query for this:</p>
+<pre><code class="language-foo">-- Search for Red balls
+select ball, colour
+from A
+left join B on B.colour = A.colour
+where A.colur = 'Red'
+</code></pre>
+<p>We will dig deeper into examples from our test database a
+little bit later.</p>
+<p>If we modify the rules a little and will take all balls from the left bag
+and search for all balls from the right bag with the same colour as the
+balls from the left bag, then
+we should remove the filter condition from our query:</p>
+<pre><code class="language-foo">select ball, colour
+from A
+left join B on B.colour = A.colour
+</code></pre>
+<p>What if we will not find any balls in the right bag, which colours
+match with the balls from the left bag? In this case, our result row
+set will contain only balls from the left bag. This is the
+only thing that makes <code>JOIN</code> and <code>LEFT</code> or <code>RIGHT JOIN</code> different.</p>
+<p>For a concrete example, suppose we are gonna fetch info about all orders.
+We have the <code>orders</code> table, which contains info about orders,
+but we also want to see what items were in each order, and this
+info is stored in the <code>order_items</code> table.</p>
+<p>First, let's see what data lies in each of these tables:</p>
+<p>Orders:</p>
+<pre><code class="language-foo">select *
+from orders
+</code></pre>
+<pre><code>id          user_id     order_date  order_num   status
+----------  ----------  ----------  ----------  ----------
+1           2           2021-10-11  32          CLOSED
+2           2           2021-08-15  230         WAITING
+3           4           2019-04-24  39          CLOSED
+4           5           2019-04-24  39          WAITING
+</code></pre>
+<p>Order_items:</p>
+<pre><code class="language-foo">select *
+from order_items
+</code></pre>
+<pre><code>id          order_id    item_id     quantity
+----------  ----------  ----------  ----------
+1           1           4           1
+2           1           6           1
+3           2           5           2
+4           3           3           4
+5           3           2           4
+</code></pre>
+<p>To query data from both tables, we need to pick a
+condition by which these tables will be joined(
+like balls colors).</p>
+<p>Here we can(and need, actually) to use order id -
+<code>order_id</code> column  in the <code>order_items</code> table
+is linked to the <code>id</code> column in the <code>orders</code> table.
+Such relation has a corresponding specific object
+in databases, called &quot;foreign key&quot;.</p>
+<p>So, here is our query:</p>
+<pre><code class="language-foo">select o.id, o.order_date, o.order_num, i.quantity
+from orders o
+left join order_items i on i.order_id = o.id
+</code></pre>
+<pre><code>id          order_date  order_num   quantity
+----------  ----------  ----------  ----------
+1           2021-10-11  32          1
+1           2021-10-11  32          1
+2           2021-08-15  230         2
+3           2019-04-24  39          4
+3           2019-04-24  39          4
+4           2019-04-24  39
+</code></pre>
+<p>Now let's talk about this query in more detail.
+We take all rows from the <code>orders</code> table, and then,
+for every row, we take all rows from the <code>order_items</code>
+table with the same value in the <code>order_id</code> column.
+For the order with id = 4, we did not find any rows in the
+<code>order_items</code> table, so there is no value in the <code>quantity</code>
+field for this row.</p>
+<h2 id="right-join" tabindex="-1">RIGHT JOIN</h2>
+<p>If we will take balls from the right bag first and then search
+for similar colours in the left bag, this will be called <code>RIGHT JOIN</code>
+operation.</p>
+<h2 id="join" tabindex="-1">JOIN</h2>
+<p>As was said, JOIN is the operation that leaves only
+those rows which exist in both tables. Let's
+get all user orders:</p>
+<pre><code class="language-foo">select u.id, u.login, o.order_date, o.status
+from users u
+join orders o on o.user_id = u.id
+</code></pre>
+<p>Result:</p>
+<pre><code>id          login       order_date  status
+----------  ----------  ----------  ----------
+2           MrWinner    2021-10-11  CLOSED
+2           MrWinner    2021-08-15  WAITING
+4           Barbie      2019-04-24  CLOSED
+5           Lisa        2019-04-24  WAITING
+</code></pre>
+<p>Note that users with id = 1 and 2 did not appear
+in a result, because they do not have any orders.</p>
+<p>Or, let's rewrite the example from
+the <code>LEFT JOIN</code> part, but this time we will
+use <code>JOIN</code>:</p>
+<pre><code class="language-foo">select o.id, o.order_date, o.order_num, i.quantity
+from orders o
+join order_items i on i.order_id = o.id
+</code></pre>
+<p>Result:</p>
+<pre><code>id          order_date  order_num   quantity
+----------  ----------  ----------  ----------
+1           2021-10-11  32          1
+1           2021-10-11  32          1
+2           2021-08-15  230         2
+3           2019-04-24  39          4
+3           2019-04-24  39          4
+</code></pre>
+<p>Row with empty quantity disappeared, because there is no
+such row in the <code>order_items</code> table, where <code>order_id</code> is equal 4.</p>
+<h2 id="using-joins-with-more-than-two-tables" tabindex="-1">Using joins with more than two tables</h2>
+<p>When we want to join more than two tables, we just
+apply join rules for the first two tables first, then we
+join result of this join with third table then result
+is joined with the fourth table and so on.</p>
+<pre><code class="language-foo">select u.id,
+       u.login,
+       o.order_date,
+       i.item_name,
+       oi.quantity
+from users u
+join orders o on o.user_id = u.id
+left join order_items oi on oi.order_id = o.id
+left join items i on i.id = oi.item_id
+where u.is_active = 1
+</code></pre>
+<p>Result:</p>
+<pre><code>id          login       order_date  item_name   quantity
+----------  ----------  ----------  ----------  ----------
+2           MrWinner    2021-10-11  TV          1
+2           MrWinner    2021-10-11  Washer      1
+2           MrWinner    2021-08-15  Laptop      2
+4           Barbie      2019-04-24  Mobile pho  4
+4           Barbie      2019-04-24  Nintendo s  4
+5           Lisa        2019-04-24
+</code></pre>
+<p>Here, the <code>users</code> table first joined with
+the <code>orders</code> table first.
+We can see what we have after this join:</p>
+<pre><code class="language-foo">select u.id, u.login, o.order_date
+from users u
+join orders o on o.user_id = u.id
+</code></pre>
+<pre><code>id          login       order_date
+----------  ----------  ----------
+2           MrWinner    2021-10-11
+2           MrWinner    2021-08-15
+4           Barbie      2019-04-24
+5           Lisa        2019-04-24
+</code></pre>
+<p>We see, that MrWinner has two orders
+(different dates, and  also different
+order_id values), Barbie and Lisa both have one
+order.</p>
+<p><strong>Important notice</strong>: when joins are performed,
+all columns from both tables are available
+for later use in a query. They don't have
+to appear in the selected columns list. In our query,
+for example, we used the <code>is_active</code> column from the <code>users</code>
+table in the <code>where</code> clause, but the column itself did
+not appear in a result set.</p>
+<p>Next, we are
+<code>jeft join</code>ing this result with the
+<code>order_items</code> table:</p>
+<pre><code class="language-foo">select u.id, u.login, o.order_date, oi.quantity
+from users u
+join orders o on o.user_id = u.id
+left join order_items oi on oi.order_id = o.id
+</code></pre>
+<pre><code>id          login       order_date  quantity
+----------  ----------  ----------  ----------
+2           MrWinner    2021-10-11  1
+2           MrWinner    2021-10-11  1
+2           MrWinner    2021-08-15  2
+4           Barbie      2019-04-24  4
+4           Barbie      2019-04-24  4
+5           Lisa        2019-04-24
+</code></pre>
+<p>Take a look at the row with user <code>Lisa</code> - it does not
+have a value in the <code>quantity</code> column. This is because there are
+no items in her order. And since we use <code>left join</code>, rows
+that have been produced by previous joins did not disappear.</p>
+<p>Just to see the difference, we can rewrite this query
+using <code>join</code> instead of <code>left join</code>:</p>
+<pre><code class="language-foo">select u.id, u.login, o.order_date, oi.quantity
+from users u
+join orders o on o.user_id = u.id
+join order_items oi on oi.order_id = o.id
+</code></pre>
+<pre><code>id          login       order_date  quantity
+----------  ----------  ----------  ----------
+2           MrWinner    2021-10-11  1
+2           MrWinner    2021-10-11  1
+2           MrWinner    2021-08-15  2
+4           Barbie      2019-04-24  4
+4           Barbie      2019-04-24  4
+</code></pre>
+<p>Here, rows, which do not have order items, have
+been removed from the result set.</p>
+<p>But let's go back to our main example. The last
+join is with the <code>items</code> table, from which we select
+item names.</p>
+<p>The final part is not join, but filtering
+(<code>where u.is_active = 1</code>) - we keep
+only those rows, which have &quot;1&quot; as value of
+the <code>users.is_active</code> column (actually,
+no rows were removed at this step, because all
+users in result set is active).</p>
+<h2 id="using-subqueries" tabindex="-1">Using subqueries</h2>
+<p>Instead tables, we can use subqueries in any JOIN clause
+(It applies not only to joins - in SQL you can use subqueries almost
+everywhere where tables can be used).</p>
+<pre><code class="language-foo">select u.login,
+       ord.order_date,
+       ord.order_num,
+       ord.item_name
+from users u
+left join (
+       select o.user_id,
+              o.order_date,
+              o.order_num,
+              oi.quantity,
+              i.item_name,
+              i.price
+       from orders o
+       join order_items oi on oi.order_id = o.id
+       left join items i on i.id = oi.item_id
+       where o.status = 'CLOSED'
+) ord on ord.user_id = u.id
+</code></pre>
+<p>Result:</p>
+<pre><code>login       order_date  order_num   item_name 
+----------  ----------  ----------  ----------
+JohnDoe                                       
+MrWinner    2021-10-11  32          TV        
+MrWinner    2021-10-11  32          Washer    
+Alex                                          
+Barbie      2019-04-24  39          Mobile pho
+Barbie      2019-04-24  39          Nintendo s
+Lisa                                          
+Stone                                         
+</code></pre>
+<p>Subqueries did not explained in this tutorial yet, but
+here it should be clear - we wrap some query in parens,
+assign alias name to it(<code>ord</code> in our case), and use it
+like it is a table.</p>
+<p><strong>Tip</strong>: Select only those columns in subqueries, which
+will be used later. Here, we did not use item price column
+(<code>i.price</code>),
+so it <em>must</em> be removed. Unnecessary columns, joins and conditions
+in subqueries make queries more complicated and harder
+to read later, especially for other people.</p>
+<h2 id="more-on-conditions-in-joins" tabindex="-1">More on conditions in joins</h2>
+<h2 id="compound-conditions" tabindex="-1">Compound conditions</h2>
+<p>We can use compound conditions by
+which we are going to join tables:</p>
+<pre><code class="language-foo">select u.login, o.order_num, o.status
+from users u
+left join orders o on o.user_id = u.id and o.status = 'CLOSED'
+</code></pre>
+<p>Result:</p>
+<pre><code>login       order_num   status    
+----------  ----------  ----------
+JohnDoe                           
+MrWinner    32          CLOSED    
+Alex                              
+Barbie      39          CLOSED    
+Lisa                              
+Stone                             
+</code></pre>
+<p>Here, only those rows from the <code>orders</code> table are
+attached to rows from the
+<code>users</code> table, where not only <code>user_id</code> has matched rows, but
+also rows that have status 'CLOSED'.</p>
+<p>Be careful here - it is the join condition, and it affects
+only on joined rows - not on a whole result. Compare query
+above with this one and see the difference:</p>
+<pre><code class="language-foo">select u.login, o.order_num, o.status
+from users u
+left join orders o on o.user_id = u.id
+where o.status = 'CLOSED'
+</code></pre>
+<p>Result:</p>
+<pre><code>login       order_num   status    
+----------  ----------  ----------
+MrWinner    32          CLOSED    
+Barbie      39          CLOSED    
+</code></pre>
+<p>Conditions in a <code>where</code> clause are applied to
+a whole dataset which is result of all joins
+in a query.</p>
+<h2 id="you-can-use-any-condition-you-want" tabindex="-1">You can use any condition you want</h2>
+<p>You don't have to join by <code>id</code> columns or
+something like that. Yes, <em>usually</em>, joins
+are performed by linking rows in one set to rows
+in another set by matching some columns, but it is not
+necessary. Join conditions are like all other conditions
+in SQL - they are just a rule, or set of rules,
+which can be evaluated to true or false, and nothing more.</p>
+<p>For example:</p>
+<pre><code class="language-foo">select u.id, u.login, o.user_id, o.order_num
+from users u
+join orders o on (1 = 1)
+</code></pre>
+<p>Boom:</p>
+<pre><code>id          login       user_id     order_num 
+----------  ----------  ----------  ----------
+1           JohnDoe     2           32        
+1           JohnDoe     2           230       
+1           JohnDoe     4           39        
+1           JohnDoe     5           39        
+2           MrWinner    2           32        
+2           MrWinner    2           230       
+2           MrWinner    4           39        
+2           MrWinner    5           39        
+3           Alex        2           32        
+3           Alex        2           230       
+3           Alex        4           39        
+3           Alex        5           39        
+4           Barbie      2           32        
+4           Barbie      2           230       
+4           Barbie      4           39        
+4           Barbie      5           39        
+5           Lisa        2           32        
+5           Lisa        2           230       
+5           Lisa        4           39        
+5           Lisa        5           39        
+6           Stone       2           32        
+6           Stone       2           230       
+6           Stone       4           39        
+6           Stone       5           39    
+</code></pre>
+<p>This is called &quot;Decart multiplication&quot;, or &quot;cartesian
+product&quot;.</p>
+<p>Here, for each row in the <code>users</code> table, join
+condition is evaluated to True for all rows
+in the <code>orders</code> table. In SQL, there is special
+syntax for such kind of joins - <code>CROSS JOIN</code>. Next
+query is identical to the previous one:</p>
+<pre><code class="language-foo">select u.id, u.login, o.user_id, o.order_num
+from users u
+cross join orders o
+</code></pre>
+<h2 id="summary-3" tabindex="-1">Summary</h2>
+<ul>
+<li>Joins allow us to query data from multiple tables</li>
+<li>We can join subqueries</li>
+<li>Join conditions can be complex</li>
+</ul>
+<h2 id="union%2C-except%2C-intersect" tabindex="-1">UNION, EXCEPT, INTERSECT</h2>
+<p>In this chapter, we will look at so-called Set operators,
+which work with the datasets returned by two queries.</p>
+<p>To make examples more understandable, we will create the
+<code>guest_orders</code> table, which will store orders that were
+placed by guest users.</p>
+<p>Our first step is to open our <code>testdb.db</code> file:</p>
+<pre><code>sqlite3 testdb.db
+</code></pre>
+<p>Then, we need to run this query:</p>
+<pre><code class="language-foo">create table guest_orders(
+    login text,
+    order_date text,
+    order_num,
+    status text
+);
+
+insert into guest_orders
+values('Anonymous', '2021-11-04', '238', 'CLOSED');
+
+insert into guest_orders
+values('JohnDoe', '2021-11-04', '239', 'CLOSED');
+
+insert into guest_orders
+values('JohnDoe', '2021-11-19', '254', 'WAITING');
+
+insert into guest_orders
+values('Alex', '2021-12-14', '283', 'WAITING');
+
+insert into guest_orders
+values('Stone', '2021-12-14', '290', 'CLOSED');
+</code></pre>
+<p>That is it. No further actions are required. When we open
+the <code>testdb.db</code> file again, it will already contain this
+table.</p>
+<h3 id="union" tabindex="-1">UNION</h3>
+<p>Let's say we want to do some analytic research, and for this,
+we need the logins of all users who have placed the orders
+(without taking into account order statuses).</p>
+<p>We already can get all logins of guest users:</p>
+<pre><code class="language-foo">select login
+from guest_orders;
+</code></pre>
+<pre><code>login    
+---------
+Anonymous
+JohnDoe  
+JohnDoe  
+Alex     
+Stone
+</code></pre>
+<p>As all logins of the registered users that
+specified in the <code>orders</code> table:</p>
+<pre><code class="language-foo">select u.login
+from orders o
+join users u on u.id = o.user_id;
+</code></pre>
+<pre><code>login   
+--------
+MrWinner
+MrWinner
+Barbie  
+Lisa    
+</code></pre>
+<p>The <code>UNION</code> operator combines results from two queries and
+removes any duplicate rows so that each row in the result
+set is unique:</p>
+<pre><code class="language-foo">select login
+from guest_orders
+
+UNION
+
+select u.login
+from users u
+join orders o on o.user_id = u.id
+</code></pre>
+<p>Result:</p>
+<pre><code>login    
+---------
+Alex     
+Anonymous
+Barbie   
+JohnDoe  
+Lisa     
+MrWinner 
+Stone    
+</code></pre>
+<p>It will be easier to understand how the <code>UNION</code> operator works
+if we run each query separately:</p>
+<p><strong>First query:</strong></p>
+<pre><code class="language-foo">select login
+from guest_orders
+</code></pre>
+<pre><code>login    
+---------
+Anonymous
+JohnDoe  
+JohnDoe  
+Alex     
+Stone    
+</code></pre>
+<p><strong>Second query:</strong></p>
+<pre><code class="language-foo">select u.login
+from users u
+join orders o on o.user_id = u.id
+</code></pre>
+<pre><code>login   
+--------
+MrWinner
+MrWinner
+Barbie  
+Lisa  
+</code></pre>
+<p>If we mix all logins, we will get this:</p>
+<pre><code>Anonymous
+JohnDoe  
+JohnDoe  
+Alex     
+Stone    
+MrWinner
+MrWinner
+Barbie  
+Lisa  
+</code></pre>
+<p>Now, if we remove all duplicate rows, we will
+get the original result. This is how the <code>UNION</code>
+operator works - getting all data and removing all duplicates,
+nothing complicated.</p>
+<p>Now, get prepared for the main rule of all set operators: <strong>each
+query must return the same number of columns</strong>:</p>
+<pre><code class="language-foo">select item_name, id
+from items
+
+UNION
+
+select item_id
+from order_items;
+</code></pre>
+<p>We will get the error message from SQLite:
+<code>Error: SELECTs to the left and right of UNION do not have the same number of result columns</code>.
+There is no need for any explanations, I think.</p>
+<h4 id="union-all" tabindex="-1">UNION ALL</h4>
+<p>The <code>UNION ALL</code> operator works like the <code>UNION</code> operator,
+except that it doesn't remove duplicates:</p>
+<pre><code class="language-foo">select login
+from guest_orders
+
+UNION ALL
+
+select u.login
+from users u
+join orders o on o.user_id = u.id
+</code></pre>
+<p>Result:</p>
+<pre><code>Anonymous
+JohnDoe  
+JohnDoe  
+Alex     
+Stone    
+MrWinner
+MrWinner
+Barbie  
+Lisa  
+</code></pre>
+<p><strong>Info</strong>: If you know that there are no
+duplicates in both queries, use the <code>UNION ALL</code> operator,
+so that a database will not spend time removing them.</p>
+<h3 id="except" tabindex="-1">EXCEPT</h3>
+<p>Let's get the items that don't appear in any order:</p>
+<pre><code class="language-foo">select id
+from items
+
+except
+
+select item_id
+from order_items;
+</code></pre>
+<p>Result:</p>
+<pre><code>id
+--
+1 
+</code></pre>
+<p>Yeah, just one item. Anyway, the <code>EXCEPT</code> operator returns
+<em>unique</em> rows from the first query, which don't exist in
+the second query.</p>
+<p>The <code>Except</code> operator works with two datasets, which are select queries.
+They can be both simple queries, as in our example, and very
+complex ones, but they are always just the select queries, nothing more.</p>
+<p>What a developer must care about is the columns' order.
+It may turn out that in some query he implied one
+meaning for the column, while in the second query
+he did a mistake and specified a column with a completely different sense for the
+same position. Such a situation is worse than an exception, because
+it's easy to miss wrong results, and it's just the time bomb.</p>
+<p>Let's demonstrate such a situation.
+Suppose we want to get all users that haven't created any order,
+and we write this query:</p>
+<pre><code class="language-foo">select id, login
+from users
+except
+select o.id, u.login
+from orders o
+join users u on u.id = o.user_id;
+</code></pre>
+<p>Result:</p>
+<pre><code>id  login  
+--  -------
+1   JohnDoe
+3   Alex   
+4   Barbie 
+5   Lisa   
+6   Stone  
+</code></pre>
+<p>Looks good, but it is the incorrect result.
+The problem here is that in the second query we fetch
+order id, while we need to get user id. Since both are
+numbers, it is easy to interpret this result as the
+right one.</p>
+<p>This is the corrected query:</p>
+<pre><code class="language-foo">select id, login
+from users
+except
+select o.user_id, u.login
+from orders o
+join users u on u.id = o.user_id;
+</code></pre>
+<p>Result:</p>
+<pre><code>id  login  
+--  -------
+1   JohnDoe
+3   Alex   
+6   Stone 
+</code></pre>
+<h3 id="intersect" tabindex="-1">INTERSECT</h3>
+<p>The <code>INTERSECT</code> operator is reversed <code>EXCEPT</code>:
+It returns <em>unique</em> (as all set operators) rows that both exist in the first and
+the second query.</p>
+<p>The following SQL statement returns the logins that appear both in the
+<code>guest_orders</code> and <code>users</code> tables:</p>
+<pre><code class="language-foo">select login
+from guest_orders
+
+intersect
+
+select login
+from users;
+</code></pre>
+<p>Result:</p>
+<pre><code>login
+-------
+Alex
+JohnDoe
+Stone
+</code></pre>
+<h2 id="subqueries" tabindex="-1">Subqueries</h2>
+<p>Subqueries are just the SQL queries that are parts
+of another SQL query.</p>
+<h3 id="subqueries-in-a-select-clause" tabindex="-1">Subqueries in a select clause</h3>
+<p>We can wrap any query in parentheses and put it
+in a <code>select</code> list alongside with ordinary columns:</p>
+<pre><code class="language-foo">select id,
+       order_date,
+       (select sum(quantity) from order_items) items_cnt
+from orders o;
+</code></pre>
+<p>Note that subqueries that are placed in a select clause should
+return only <em>one row and one column or return no data
+at all</em>. The next query is illegal:</p>
+<pre><code class="language-foo">select id,
+       order_date,
+       (select oi.order_item, oi.id from order_items oi) items_cnt
+from orders o;
+</code></pre>
+<h3 id="correlated-subqueries" tabindex="-1">Correlated subqueries</h3>
+<p>Correlated subqueries are the queries that use
+data from external (relating to them) queries:</p>
+<pre><code class="language-foo">select id,
+       order_date,
+       (select sum(i.quantity) from order_items i where i.order_id = o.id) items_cnt
+from orders o;
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-foo">id  order_date  items_cnt
+--  ----------  ---------
+1   2021-10-11  2        
+2   2021-08-15  2        
+3   2019-04-24  8        
+4   2019-04-24          
+</code></pre>
+<p>For each fetched row from the <code>orders</code> table, the subquery
+is executed, and every time it will use the value
+of <code>o.id</code> column, which it takes from the &quot;outer&quot; query.</p>
+<h3 id="subqueries-as-tables" tabindex="-1">Subqueries as tables</h3>
+<p>We can use subqueries anywhere in a <code>SELECT</code> query where
+we can use tables. For example:</p>
+<pre><code class="language-foo">select o.id,
+       i.item_name,
+       ord_items.quantity
+from orders o
+join (
+    select oi.order_id,
+           oi.item_id,
+           oi.quantity
+    from order_items oi
+    where quantity &gt;= 2
+) ord_items on ord_items.order_id = o.id
+join items i on i.id = ord_items.item_id
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-foo">id  item_name        quantity
+--  ---------------  --------
+2   Laptop           2       
+3   Nintendo switch  4       
+3   Mobile phone     4    
+</code></pre>
+<p>In the example above, we have joined the <code>orders</code> table with
+the subquery instead of a table. Then, we treat its data like
+if it's contained in a some table with  the <code>ord_items</code> alias.</p>
+<p>Here is another example, where we use a subquery as a single
+source of data:</p>
+<pre><code class="language-foo">select a.*
+from (
+    select *
+    from items
+) a
+where a.price &lt; 500
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-foo">id  item_name        price
+--  ---------------  -----
+1   Microwave        300  
+2   Mobile phone     350  
+3   Nintendo switch  400
+</code></pre>
+<p>Applying all above rules we can nest one subquery into another:</p>
+<pre><code class="language-foo">select id,
+       order_date,
+       status,
+       login,
+       qty
+from (
+select ord_info.id,
+       ord_info.order_date,
+       ord_info.status,
+       ord_info.login,
+       (
+           select sum(oi.quantity)
+           from order_items oi
+           where oi.order_id = ord_info.id
+       ) qty
+from (
+    select o.id, o.order_date, o.status, u.login
+    from orders o
+    join users u on u.id = o.user_id
+) ord_info
+) summary;
+</code></pre>
+<p>Result:</p>
+<pre><code class="language-foo">id  order_date  status   login     qty
+--  ----------  -------  --------  ---
+1   2021-10-11  CLOSED   MrWinner  2  
+2   2021-08-15  WAITING  MrWinner  2  
+3   2019-04-24  CLOSED   Barbie    8  
+4   2019-04-24  WAITING  Lisa  
+</code></pre>
+<p>Here we have used the correlated subquery to get items quantity for each order, while data about orders has been obtained by joining two tables - <code>orders</code> and <code>users</code> (and this join has been performed in the subquery). Then, we have wrapped the whole query into one single subquery and have used it like it's a table. Logically, we can imagine the query above like the next one:</p>
+<pre><code class="language-foo">select id,
+       order_date,
+       status,
+       login,
+       qty
+from summary;
+</code></pre>
+<p>Where the <code>summary</code> table is our big outer subquery:</p>
+<pre><code class="language-foo">select ord_info.id,
+       ord_info.order_date,
+       ord_info.status,
+       ord_info.login,
+       (
+           select sum(oi.quantity)
+           from order_items oi
+           where oi.order_id = ord_info.id
+       ) qty
+from orders_info ord_info
+</code></pre>
+<p>While the <code>orders_info</code> table can be disassembled into this:</p>
+<pre><code class="language-foo">select o.id, o.order_date, o.status, u.login
+from orders o
+join users u on u.id = o.user_id
+</code></pre>
+<p>Thus, subqueries can be used as build blocks for a more complex query, making it easy to write and understand.</p>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>

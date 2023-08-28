@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="Linux hacks compilation" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/blog/linuxhacks/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        Linux hacks compilation
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+        	<div class="header">
+	<span class="header__item ">Ychbn</span>
+</div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> Linux hacks compilation</h1>
+        	
+
+            
+
+        	<h2 id="%D0%BB%D0%B5%D0%B3%D0%BA%D0%B0%D1%8F-%D1%80%D0%B0%D0%B1%D0%BE%D1%82%D0%B0-%D1%81-%D0%B0%D1%80%D1%85%D0%B8%D0%B2%D0%B0%D0%BC%D0%B8-%D0%B8%D0%B7-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D0%B8-%D0%B2-linux" tabindex="-1">Легкая работа с архивами из консоли в linux</h2>
+<p>Довольно часто возникает необходимость работы с архивами из терминала.</p>
+<p>Так как постоянно вводить нудные команды для их распаковки лень, на просторах интернета
+был найден следующий код, который позволяет распаковывать одной короткой командой
+большое количество разных архивов:</p>
+<pre><code class="language-bash">x(){
+    if [ -f $1 ] ; then
+            case $1 in
+                    *.tar.bz2)   tar xvjf $1    ;;
+                    *.tar.gz)    tar xvzf $1    ;;
+                    *.bz2)       bunzip2 $1     ;;
+                    *.rar)       unrar x $1     ;;
+                    *.gz)        gunzip $1      ;;
+                    *.tar)       tar xvf $1     ;;
+                    *.tbz2)      tar xvjf $1    ;;
+                    *.tgz)       tar xvzf $1    ;;
+                    *.zip)       unzip $1       ;;
+                    *.Z)         uncompress $1  ;;
+                    *.7z)        7z x $1        ;;
+                    *)           echo &quot;Unable to extract '$1'&quot; ;;
+            esac
+    else
+            echo &quot;'$1' is not a valid file&quot;
+    fi
+}
+</code></pre>
+<p>Этот код можно добавить в файл <code>.bashrc</code>. Для того, чтобы новой командой можно было
+пользоваться без повторного входа в систему, можно выполнить следующую команду:</p>
+<pre><code class="language-bash">source ~/.bashrc
+</code></pre>
+<p>Теперь распаковывать архивы можно так:</p>
+<pre><code class="language-bash">x somearchive.tar.gz
+</code></pre>
+<h3 id="%D1%81%D0%BE%D0%B7%D0%B4%D0%B0%D0%BD%D0%B8%D0%B5-%D0%B0%D1%80%D1%85%D0%B8%D0%B2%D0%B0" tabindex="-1">Создание архива</h3>
+<pre><code class="language-bash">tgz(){
+        tar -czf &quot;$1.tar.gz&quot; $1
+}
+</code></pre>
+<p>Создавать архивы из директории или файла можно так:</p>
+<pre><code class="language-bash">tgz directory_to_compress
+</code></pre>
+<h2 id="%D1%80%D0%B0%D0%B7%D0%B1%D0%B8%D0%B2%D0%BA%D0%B0-%D0%B1%D0%BE%D0%BB%D1%8C%D1%88%D0%BE%D0%B3%D0%BE-%D1%84%D0%B0%D0%B9%D0%BB%D0%B0-%D0%BD%D0%B0-%D1%87%D0%B0%D1%81%D1%82%D0%B8-%D0%B2-linux" tabindex="-1">Разбивка большого файла на части в linux</h2>
+<p>Часто возникает необходимость разбить большой файл на части. Я для этого использую следующую команду:</p>
+<pre><code class="language-bash">split --bytes 500M --numeric-suffixes --suffix-length=3 filename filename. 
+</code></pre>
+<p>Данная команда разобьет файл на части по 500 МБ, при этом автоматически добавит суффиксы
+для нумерации частей(в данном случае суффикс будет состоять из трех символов, т.е. будет
+равен 000, 001, и т.п).</p>
+<h2 id="%D0%B7%D0%B0%D0%BF%D0%B8%D1%81%D1%8C-%D0%B4%D0%B5%D0%B9%D1%81%D1%82%D0%B2%D0%B8%D0%B9-%D1%81-%D1%8D%D0%BA%D1%80%D0%B0%D0%BD%D0%B0-%D0%B2-gif-%D0%BD%D0%B0-linux" tabindex="-1">Запись действий с экрана в GIF на linux</h2>
+<p>Для записи происходящего на экране в изображение формата gif на linux можно воспользоваться программой byzanz.
+Проблема в том, что для записи с экрана <code>byzanz</code> принимает координаты X и Y, а также значения ширины и высоты области, с которой нужно производить захват.
+Решить эту проблему помогает скрипт <code>byzanz-record-window.sh</code>.
+Найти одну из его вариаций легко на гитхабе. Вот пример работающего скрипта:</p>
+<pre><code class="language-bash">#!/bin/bash
+
+# Delay before starting
+DELAY=10
+
+# Sound notification to let one know when recording is about to start (and ends)
+beep() {
+    paplay /usr/share/sounds/KDE-Im-Irc-Event.ogg &amp;
+}
+
+# Duration and output file
+if [ $# -gt 0 ]; then
+    D=&quot;--duration=$@&quot;
+else
+    echo Default recording duration 10s to /tmp/recorded.gif
+    D=&quot;--duration=10 /tmp/recorded.gif&quot;
+fi
+XWININFO=$(xwininfo)
+read X &lt;&lt;&lt; $(awk -F: '/Absolute upper-left X/{print $2}' &lt;&lt;&lt; &quot;$XWININFO&quot;)
+read Y &lt;&lt;&lt; $(awk -F: '/Absolute upper-left Y/{print $2}' &lt;&lt;&lt; &quot;$XWININFO&quot;)
+read W &lt;&lt;&lt; $(awk -F: '/Width/{print $2}' &lt;&lt;&lt; &quot;$XWININFO&quot;)
+read H &lt;&lt;&lt; $(awk -F: '/Height/{print $2}' &lt;&lt;&lt; &quot;$XWININFO&quot;)
+
+
+echo X=$X
+
+echo Delaying $DELAY seconds. After that, byzanz will start
+for (( i=$DELAY; i&gt;0; --i )) ; do
+    echo $i
+    sleep 1
+done
+
+beep
+byzanz-record --verbose --delay=0 --x=$X --y=$Y --width=$W --height=$H $D
+beep
+</code></pre>
+<p>Чтобы записать все происходящее на экране, нужно сохранить данный скрипт под
+именем <code>beyzanz-record-window.sh</code> в домашнем каталоге, после чего выполнить команду</p>
+<pre><code class="language-bash">./beyzanz-record-window.xh 30 ~/record.gif
+</code></pre>
+<p>После ввода данной команды нужно будет щелкнуть мышкой по окну приложения, действия в котором нужно записать.
+Скрипт начнет запись с задержкой в 10 секунд, после чего будет произведена запись продолжительностью в 30 секунд.</p>
+<p>Результат будет сохранени в файле <code>~/record.gif</code>:</p>
+<p><img src="/img/recorded.gif" alt="/img/recorded.gif"></p>
+<h2 id="%D0%BA%D0%B8%D1%80%D0%B8%D0%BB%D0%BB%D0%B8%D1%86%D0%B0-%D0%B2-%D0%B2%D0%B8%D1%80%D1%82%D1%83%D0%B0%D0%BB%D1%8C%D0%BD%D0%BE%D0%B9-%D0%BA%D0%BE%D0%BD%D1%81%D0%BE%D0%BB%D0%B8-linux" tabindex="-1">Кириллица в виртуальной консоли Linux</h2>
+<p>Для того, чтобы кириллица нормально отображалась в виртуальной консоли
+linux(обычно доступна по Ctrl-Alt-F1..F7), достаточно выбрать шрифт, который поддерживает русский язык.</p>
+<p>Сделать это можно следующим образом:</p>
+<pre><code class="language-bash">setfont ter-c16b
+</code></pre>
+<h2 id="how-to-merge-multiple-images-into-one" tabindex="-1">How to merge multiple images into one</h2>
+<p>Merge files vertical:</p>
+<pre><code class="language-bash">convert image1.jpg image2.jpg -append cover.png
+</code></pre>
+<p>Merge files horizontal:</p></p>
+<pre><code class="language-bash">convert image1.jpg image2.jpg +append cover.png
+</code></pre>
+<h2 id="suspend-laptop-from-command-line" tabindex="-1">Suspend laptop from command line</h2>
+<pre><code class="language-bash">systemctl suspend
+</code></pre>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>

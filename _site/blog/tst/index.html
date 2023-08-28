@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<link rel="stylesheet" type="text/css" href="/bundle/ZixW2vd9ga.css">
+
+	<title></title>
+</head>
+<body>
+	
+
+	<div class="header">
+	<span class="header__item ">Universal theme</span>
+</div>
+
+
+<div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+			<a  class="nav__item " href="/docs/"> Documentation </a>
+	</div>
+</div>
+
+<div class="container stack">
+	
+		<h1> test title. Again</h1>
+	
+	<p>Ofthen when you're working on a frontend part of your application, there are
+no implemented backend API yet, and you have to mock it.
+In this article I'll tell how you can use the <a href="https://mswjs.io">MSW</a> library
+for it and why you should give it a try.</p>
+<p>You can find all code in a <a href="https://github.com/cyevgeniy/msw-demo">Github repository</a>.</p>
+<h2>Creating our demo</h2>
+<p>Our demo project is going to be a simple web application in vanilla javascript.
+We will also use <a href="https://axios-http.com">Axios</a> package for https requests and
+<a href="https://vitejs.dev">Vite</a> as a build tool.</p>
+<p>At first, we need a skeleton for our application.
+Luckily, vite can generate if for us. Go to the directory where you
+plan to create a repository and run this command:</p>
+<pre><code class="language-powershell">npm create vite@latest mswdemo -- --template vanilla
+</code></pre>
+<p>The <code>--template vanilla</code> flag tells vite to create template project
+for vanilla javascript. Then, go to the <code>mswdemo</code> directory
+and install all required packages:</p>
+<pre><code class="language-powershell">npm install
+</code></pre>
+<p>Now we can run our dev server and see what we've got:</p>
+<pre><code class="language-powershell">npm run dev
+</code></pre>
+<p><img src="/img/vite_1.png" alt=""></p>
+<p>We will create a service for displaying information about current user.
+To get user data, we have to make an HTTP request to a server, but our
+backend part is not implemented yet, so we will mock it. All what we need
+for start is to know how our API will work - to which URL we need to
+make request,which parameters it will expect and what kind of response it
+will return.</p>
+<h3>API</h3>
+<p>Here is the description of our API:</p>
+<p>GET /user/:id - Returns our user data</p>
+<p>User data is a JSON file with fields:</p>
+<pre><code>id
+firstName
+lastName
+email
+phone
+registeredAt
+</code></pre>
+<h2>Creating app's main page</h2>
+<p>This topic is not about good design, so we'll create
+very simple main page with the user information.</p>
+<p>Vite's entry point is the <code>index.html</code> file.
+By default, html is inserted into this file via <code>main.js</code> file.</p>
+<p>We don't need any javascript interactions for now, so let's comment the line
+where this file is included and create the html structure for our page:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;link rel=&quot;icon&quot; type=&quot;image/svg+xml&quot; href=&quot;/vite.svg&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+    &lt;title&gt;Vite App&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;&lt;/div&gt;
+    &lt;!-- &lt;script type=&quot;module&quot; src=&quot;/main.js&quot;&gt;&lt;/script&gt; --&gt;
+
+    &lt;h2&gt; User information: &lt;/h2&gt;
+    &lt;ul&gt;
+        &lt;li id=&quot;firstName&quot;&gt; First name &lt;/li&gt;
+        &lt;li id=&quot;lastName&quot;&gt; Last name &lt;/li&gt;
+        &lt;li id=&quot;email&quot;&gt; Email &lt;/li&gt;
+        &lt;li id=&quot;registered&quot;&gt; Registered at &lt;/li&gt;
+        &lt;li id=&quot;login&quot;&gt; Login &lt;/li&gt;
+    &lt;/ul&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>If we run <code>npm run dev</code> command, our page will look like this:</p>
+<p><img src="/img/vite_2.png" alt=""></p>
+<p>Now we want to fill this page with actual data. For the first time,
+we're going to use one of the many online services - later you'll
+see that MSW is better, but you should try both ways to see the
+difference.</p>
+<p>First, create the <code>api</code> directory. Inside this directory, create
+a <code>userService.js</code> file:</p>
+<pre><code class="language-javascript">export const getUserInfo = async () =&gt; {
+    try {
+        const response = await fetch(&quot;https://jsonplaceholder.typicode.com/users/1&quot;)
+        const info = await response.json()
+        return info
+    } catch(e) {
+        console.error(&quot;Error in getUserInfo: &quot;, e)
+        return null
+    }
+}
+</code></pre>
+<p>This file contains only one function - <code>getUserInfo</code>. It fetches
+info about one single user.</p>
+<p>It's also a good idea to let the user know that data is being loaded.
+We will hide information block while data is loading and
+show to the user another block with &quot;Loading&quot; text in it. When fetch
+is finished, we will hide the &quot;loading&quot; block and show the &quot;User info&quot; block.</p>
+<p>Here's the source of <code>index.html</code>:</p>
+<pre><code class="language-html">&lt;!DOCTYPE html&gt;
+&lt;html lang=&quot;en&quot;&gt;
+  &lt;head&gt;
+    &lt;meta charset=&quot;UTF-8&quot; /&gt;
+    &lt;link rel=&quot;icon&quot; type=&quot;image/svg+xml&quot; href=&quot;/vite.svg&quot; /&gt;
+    &lt;meta name=&quot;viewport&quot; content=&quot;width=device-width, initial-scale=1.0&quot; /&gt;
+    &lt;title&gt;Vite App&lt;/title&gt;
+  &lt;/head&gt;
+  &lt;body&gt;
+    &lt;div id=&quot;app&quot;&gt;&lt;/div&gt;
+    &lt;script type=&quot;module&quot; src=&quot;/main.js&quot;&gt;&lt;/script&gt;
+
+    &lt;div id=&quot;userInfo&quot;&gt;
+        &lt;h2&gt; User Information: &lt;/h2&gt;
+        &lt;ul&gt;
+            &lt;li id=&quot;firstName&quot;&gt; First name &lt;/li&gt;
+            &lt;li id=&quot;lastName&quot;&gt; Last name &lt;/li&gt;
+            &lt;li id=&quot;email&quot;&gt; Email &lt;/li&gt;
+            &lt;li id=&quot;registered&quot;&gt; Registered at &lt;/li&gt;
+            &lt;li id=&quot;login&quot;&gt; Login &lt;/li&gt;
+        &lt;/ul&gt;
+    &lt;/div&gt;
+    &lt;div id=&quot;loading&quot;&gt;
+        Loading, please wait...
+    &lt;/div&gt;
+  &lt;/body&gt;
+&lt;/html&gt;
+</code></pre>
+<p>Let's add our logic. It's contained in the <code>main.js</code>:</p>
+<pre><code class="language-javascript">import { getUserInfo } from &quot;./api/userService&quot;
+
+
+
+const loadInfo = async () =&gt; {
+    // Hide user info block
+    document.getElementById('userInfo').hidden = true;
+
+    // show &quot;loading&quot; block
+    document.getElementById('loading').hidden = false;
+
+    // Fetch user info
+    const info = await getUserInfo()
+
+    // Fill fields with user's data
+    if (info) {
+        document.getElementById('firstName').innerHTML = info.name
+        document.getElementById('email').innerHTML = info.email
+        document.getElementById('login').innerHTML = info.login
+
+        // Hide loading state and show user info
+        document.getElementById('userInfo').hidden = false
+        document.getElementById('loading').hidden = true
+    }
+}
+
+// Fetch user info
+loadInfo()
+</code></pre>
+<p>Our page looks like this now:</p>
+<p><img src="/img/vite_3.png" alt=""></p>
+<p>Not all fields filled with data, because fake API service doesn't provide
+all what we need. And that's one of the downsides of online services.</p>
+<h2>Some refactoring</h2>
+<p>Our <code>getUserinfo</code> can be better:</p>
+<ul>
+<li>accept user id as a  parameter (mandatory change)</li>
+<li>Base url for api call (<a href="https://jsonplaceholder.typicode.com">https://jsonplaceholder.typicode.com</a>)
+can be moved outside the <code>userService</code> module.</li>
+</ul>
+<p>For the base url, we are going to use <code>.env</code> file.
+Create it in the project's root directory:</p>
+<pre><code class="language-javascript">VITE_BASE_URL=&quot;https://jsonplaceholder.typicode.com&quot;
+</code></pre>
+<p>And here is a modified version of <code>getUserInfo</code>:</p>
+<pre><code class="language-javascript">export const getUserInfo = async (id) =&gt; {
+    try {
+        const baseUrl = import.meta.env.VITE_BASE_URL
+        const response = await fetch(baseUrl + `/users/${id}`)
+        const info = await response.json()
+        return info
+    } catch(e) {
+        console.error(&quot;Error in getUserInfo: &quot;, e)
+        return null
+    }
+}
+</code></pre>
+<p>And after that, we have to pass user's id to this function in the
+<code>main.js</code> file:</p>
+<pre><code class="language-javascript">....
+// Fetch user info
+const info = await getUserInfo(2)
+...
+</code></pre>
+<p>Now, I think it's enough for our test project. Here, we have
+some problems:</p>
+<ul>
+<li>Base URL for our app is faked. We have to change it every time
+we debug or test our app or write separate logic for handling
+two different URLs (for production and development).</li>
+<li>We can't control what data is returned. Third-party mock API may
+lack of required fields or response's structure.</li>
+<li>We can't control <strong>behaviour</strong>. For example, some of our <code>DELETE</code> calls should
+be forbidden depending on some rules and we want to write frontend part
+that handles this logic.</li>
+</ul>
+<h2>MSW framework</h2>
+<p><a href="https://mswjs.io/docs/">MSW</a> is a library for mocking API responses.
+It can handle <em>REAL</em> https calls and return any data you want for them.
+It means that if your api isn't implemented yet, or even if you have
+no access to the internet, you can use it like if your app is talking to
+the real backend server.</p>
+<p>First of all, let's install it:</p>
+<pre><code>npm i msw --save-dev
+</code></pre>
+<p>Then, create <code>mocks</code> directory and create a <code>handlers.js</code> file inside it.
+This file will contain handlers for our https calls that return
+mock data:</p>
+<pre><code class="language-js">// src/mocks/handlers.js
+import { rest } from 'msw'
+export const handlers = [
+  // Handles a POST /login request
+  rest.post('/login', null),
+  // Handles a GET /user request
+  rest.get('/user', null),
+]
+</code></pre>
+<p>So, basically, all we need to do is to return mock
+data through these handlers. When our application sends HTTP requests, our
+handler catches them. Then, it processes all matched requests and responds
+with mocked data. All unprocessed requests are sent further. Let's write our
+handler for the <code>/user/:id</code> request:</p>
+<pre><code class="language-js">// src/mocks/handlers.js
+import { rest } from 'msw'
+
+export const handlers = [
+    rest.get('https://mydomain.com/users/:id', (req, res, ctx) =&gt; {
+        return res(
+            ctx.status(200),
+            ctx.json({
+                firstName: &quot;John&quot;,
+                lastName: &quot;Doe&quot;,
+                registered: &quot;2022-02-01&quot;,
+                login: &quot;john_doe_123&quot;,
+                email: &quot;johndoe@mailcomain.com&quot;
+            }),
+        )
+    }),
+]
+</code></pre>
+<p>As was told before, the nice thing here is that we can send
+responses with the structure that we exactly need.</p>
+<p>Now, we can change the <code>VITE_BASE_URL</code> variable in our
+<code>.env</code> file to <code>https://mydomain.com</code> (It may be anything, actually,
+you can put here your <em>real</em> url).</p>
+<p>The last thing we need to do is to register a Service Worker
+for requests interception. The MSW library can create it for
+us. Run this command:</p>
+<pre><code class="language-js">npx msw init public --save
+</code></pre>
+<p>Then, create a <code>/mocks/browser.js</code> file:</p>
+<pre><code class="language-js">// src/mocks/browser.js
+import { setupWorker } from 'msw'
+import { handlers } from './handlers'
+// This configures a Service Worker with the given request handlers.
+export const worker = setupWorker(...handlers)
+</code></pre>
+<p>This file setups service workers with our route handlers from the <code>handlers.js</code> file.</p>
+<p>Now, open <code>main.js</code> file and import our <code>worker</code> from the <code>browser.js</code> module:</p>
+<pre><code class="language-js">import { worker } from &quot;./mocks/browser&quot;
+</code></pre>
+<p>Then, add following code:</p>
+<pre><code class="language-js">// Start service workers
+if (process.env.NODE_ENV === &quot;development&quot;) {
+    worker.start();
+}
+</code></pre>
+<p>Important notice - we should run our worker only in development mode,
+because we don't want it  to intercept our request in production.</p>
+<p>Finally, since now we have full data structure that we need, modify
+<code>loadInfo</code> function:</p>
+<pre><code class="language-js">const loadInfo = async () =&gt; {
+    // Hide user info block
+    document.getElementById('userInfo').hidden = true;
+
+    // show &quot;loading&quot; block
+    document.getElementById('loading').hidden = false;
+
+    // Fetch user info
+    const info = await getUserInfo(2)
+
+    // Fill fields with user's data
+    if (info) {
+        document.getElementById('firstName').innerHTML = info.firstName
+        document.getElementById('lastName').innerHTML = info.lastName
+
+
+        document.getElementById('email').innerHTML = info.email
+        document.getElementById('login').innerHTML = info.login
+
+        document.getElementById('registered').innerHTML = info.registered
+
+        // Hide loading state and show user info
+        document.getElementById('userInfo').hidden = false
+        document.getElementById('loading').hidden = true
+    }
+}
+</code></pre>
+<p>That's all. Run <code>npm run dev</code> and open console (<code>F12</code> key). We should
+see the message:</p>
+<pre><code class="language-js">[MSW] Mocking enabled.
+</code></pre>
+<p>As you can see, our page now shows user data from our mock handler:</p>
+<p><img src="/img/vite_4.png" alt=""></p>
+<p>One more thing - we haven't took into account user id that we
+pass to <code>getUserInfo</code>. With msw, it's easy to get access to route parameters:</p>
+<pre><code class="language-js">//src/mocks/handlers.js
+import { rest } from 'msw'
+
+function User(id) {
+    this.firstName = &quot;John_&quot; + id
+    this.lastName = &quot;Doe_&quot; + id
+    this.registered = &quot;2022-02-01&quot;
+    this.login = &quot;john_doe_&quot; + id
+    this.email = this.login + &quot;@maildomain.com&quot;
+}
+
+export const handlers = [
+    rest.get('https://mydomain.com/users/:id', (req, res, ctx) =&gt; {
+
+        const { id } = req.params // Get user id
+
+        return res(
+            ctx.status(200),
+            ctx.json(
+                // And generate different mock data for different users
+                new User(id)
+            ),
+        )
+    }),
+]
+</code></pre>
+
+</div>
+<div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            {% include "opengraph.njk" %}
+	{#- Add the contents of a file to the bundle #}
+	{%- css %}{% include "public/css/bundle.css" %}{% endcss %}
+	<link rel="stylesheet" type="text/css" href="{% getBundleFileUrl 'css' %}">
+
+	<title>
+      {% if (title) %}
+        {{title}}
+      {% else %}
+        {{meta.title}}
+      {% endif %}
+
+    </title>
+  </head>
+  <body>
+	{{ content | safe }}
+  </body>
+</html>

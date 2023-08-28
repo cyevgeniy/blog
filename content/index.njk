@@ -1,0 +1,14 @@
+---
+layout: "layouts/base-centered.njk"
+eleventyExcludeFromCollections: false
+eleventyNavigation:
+  key: Home
+  order: 1
+---
+
+{% for post in collections.timeline | reverse %}
+  <article>
+    {% if (meta.showPostDate) and (post.data.date) %}<span class="postlist__date"> {{ post.data.date.toLocaleDateString()}} </span> {% endif %}
+    {{ post.content | safe }}
+  </article>
+{% endfor %}

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="Embedded structs in Go" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/blog/go-embedded-structs/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        Embedded structs in Go
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+        	<div class="header">
+	<span class="header__item ">Ychbn</span>
+</div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> Embedded structs in Go</h1>
+        	
+
+            
+
+        	<p>I decided to document interesting things that I discover while
+learning something, and this is the first post in a such manner. I like Go
+programming language and trying to write simple programs in it (
+at least <a href="false">one</a> helped me to generate docs for
+our pl/sql codebase, and I think it may be helpful even for someone else, too),
+and recently I was puzzled by one single line in the <a href="https://github.com/gin-gonic/gin">Gin framework</a>
+when I was trying to understand how its <code>Engine</code> struct is implemented.</p>
+<p>It was looked like this:</p>
+<pre><code>// Engine is the framework's instance, it contains the muxer, middleware and configuration settings.
+// Create an instance of Engine, by using New() or Default()
+type Engine struct {
+	RouterGroup
+    ....
+    ....
+}
+</code></pre>
+<p>Why <code>RouterGroup</code> is written here as a type, without a field name?
+So, here are my investigations.</p>
+<h2 id="embedded-fields" tabindex="-1">Embedded fields</h2>
+<p>In Go, we can embed one structure into another when we declare
+a type.</p>
+<pre><code>package main
+
+import &quot;fmt&quot;
+
+type User struct {
+    Name string
+    LastName string
+}
+
+type SpecifiedUser struct {
+    User // &lt;--- MAY BE VERY FRUSTRATING
+    Id uint64
+    Subsystem string
+}
+
+func main() {
+	var u SpecifiedUser
+
+	u.Name = &quot;Alex&quot;
+
+	fmt.Println(u.Name)
+}
+</code></pre>
+<p>See, we didn't declare <code>Name</code> field directly in the <code>SpecifiedUser</code> struct, it
+was just injected from the <code>User</code> type.</p>
+<p>If we run this program, it will print string &quot;Alex&quot;.</p>
+<p>What about methods? I mean, if a <code>User</code> struct has, for example, a <code>printUserName</code> method,
+will <code>SpecifiedUser</code> also has this method? Let's try:</p>
+<pre><code>package main
+
+import &quot;fmt&quot;
+
+type User struct {
+    Name string
+    LastName string
+}
+
+func (u User) printUserName() {
+	fmt.Println(&quot;User name print&quot;)
+}
+
+type SpecifiedUser struct {
+    User
+    Id uint64
+    Subsystem string
+}
+
+func main() {
+	var u SpecifiedUser
+
+	u.printUserName()
+}
+</code></pre>
+<p>Run the program:</p>
+<pre><code>go run ./go-embedded-structs.go
+User name print
+</code></pre>
+<p>Boom! Method also has been embedded! But this was a &quot;stateless&quot; method - it prints just
+a constant string. Let's see how it will work if we try to print <code>Name</code> field:</p>
+<pre><code>package main
+
+import &quot;fmt&quot;
+
+type User struct {
+    Name string
+    LastName string
+}
+
+func (u User) printUserName() {
+	fmt.Println(u.Name)
+}
+
+type SpecifiedUser struct {
+    User
+    Id uint64
+    Subsystem string
+}
+
+func main() {
+	var u SpecifiedUser
+
+	u.Name = &quot;Alex&quot;
+
+	u.printUserName()
+}
+</code></pre>
+<pre><code>go run ./go-embedded-structs.go
+Alex
+</code></pre>
+<p>Since I know that fields and methods are injected, it's not a big surprise, but still
+interesting and important result.</p>
+<h2 id="when-a-parent-struct-has-the-same-field-name-as-an-embedded" tabindex="-1">When a parent struct has the same field name as an embedded</h2>
+<p>My next question was: &quot;What if there are fields with the same names?&quot;.
+I thought that Go will throw an error, but I was wrong:</p>
+<pre><code>package main
+
+import &quot;fmt&quot;
+
+type User struct {
+    Name string
+    LastName string
+}
+
+func (u User) printUserName() {
+	fmt.Println(u.Name)
+}
+
+type SpecifiedUser struct {
+    User
+    Name string
+    Id uint64
+    Subsystem string
+}
+
+func main() {
+	var u SpecifiedUser
+
+	u.Name = &quot;Alex&quot;
+
+	u.printUserName()
+}
+</code></pre>
+<p>However, this program prints nothing. But if we try to print <code>Name</code> field manually,
+it works:</p>
+<pre><code>func main() {
+	var u SpecifiedUser
+
+	u.Name = &quot;Alex&quot;
+
+	u.printUserName()
+	fmt.Println(u.Name)
+}
+</code></pre>
+<p>Program with this <code>main</code> function prints this:</p>
+<pre><code>Alex
+</code></pre>
+<h2 id="final-thoughts" tabindex="-1">Final thoughts</h2>
+<p>Field embedding is a great way to compose new
+types out of already existed ones, and it really
+looks elegant, like almost everything in Go that I know at
+this moment.</p>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>

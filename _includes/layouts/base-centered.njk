@@ -1,0 +1,30 @@
+---
+layout: "layouts/base.njk"
+showSiteTitle: true
+---
+
+<div class="page-container">
+    <div>
+        {% if (showSiteTitle) %}
+        	{% include "sitetitle.njk" %}
+        {% endif %}
+
+        {% include "navigation.njk" %}
+
+        <div class="container stack">
+        	{% if (title) %}
+        		<h1> {{title}}</h1>
+        	{% endif %}
+
+            {% if (toc) %}
+        		<h2>Table of contents</h2>
+        			{{ content | toc(tags=['h2', 'h3', 'h4']) | safe }}
+            {% endif %}
+
+        	{{ content | safe }}
+        </div>
+    </div>
+    <div class="footer-container">
+        {% include "footer.njk" %}
+    </div>
+</div>

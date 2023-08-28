@@ -1,0 +1,12 @@
+---
+layout: "layouts/base-centered.njk"
+eleventyExcludeFromCollections: true
+---
+
+{% for post in collections.posts | reverse %}
+  <p>
+    <a class="postlist__item" href="{{post.url}}">{{ post.data.title }}</a>
+    {% if (meta.showPostDate) and (post.data.date) %}, <span class="postlist__date"> {{ post.data.date.toLocaleDateString()}} </span> {% endif %}
+  </p>
+{% endfor %}
+

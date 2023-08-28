@@ -1,0 +1,667 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="Building Delphi application with Python" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/blog/build-delphi-with-python/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        Building Delphi application with Python
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+        	<div class="header">
+	<span class="header__item ">Ychbn</span>
+</div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> Building Delphi application with Python</h1>
+        	
+
+            
+
+        	<h2 id="the-problem-we-needed-to-solve" tabindex="-1">The problem we needed to solve</h2>
+<p>In the company I work we develop and support some count of
+desktop applications written in Delphi with a high usage of PL/SQL code
+in the database. Besides building and copying an executable file to FTP server,
+there are some additional steps we usually do:</p>
+<ul>
+<li>Building documentation (with Sphinx framework) and copying it to FTP server</li>
+<li>Running database migrations</li>
+<li>Compiling PL/SQL packages that we have changed since the last version</li>
+</ul>
+<p>Nowdays, a Python script does all these things, and I am going to tell which
+steps we have done and what we plan to do to automate the build process
+even more.</p>
+<h2 id="the-old-way---using-of-a-batch-script" tabindex="-1">The old way - using of a batch script</h2>
+<p>First thing that we were using is a batch script that was building an
+application, right from CMD console or PowerShell. It looked like this:</p>
+<pre><code class="language-gkhjg">rem get the current branch name #http://stackoverflow.com/questions/6245570/get-current-branch-name
+for /f &quot;delims=&quot; %%a in ('git rev-parse --abbrev-ref HEAD') do @set original_branch=%%a
+
+if %original_branch%==production (
+
+call rsvars.bat
+msbuild program.dproj /p:config=Release /t:Build
+upx.exe program.exe
+
+xcopy /R /Y program.exe A:FTP\LOCATION
+xcopy /R /Y changelog.md A:FTP\LOCATION
+goto end
+)
+
+if %original_branch%==testing (
+
+call rsvars.bat
+msbuild project.dproj /p:config=Release /t:Build
+upx.exe program.exe
+
+
+echo Copying executable to test directory...
+xcopy /R /Y program.exe A:FTP\TEST\LOCATION
+
+goto end
+)
+
+call rsvars.bat
+msbuild projectfile.dproj /p:config=Release /t:Build
+
+:end
+</code></pre>
+<p>Here, we are using <code>msbuild</code> to build our app, but for successfull build
+we also need to setup required environment variables. Luckily, RAD Studio
+comes with the <code>rsvars.bat</code> script, which setups them for us. This script is located at
+<code>C:\Program Files (x86)\Embarcadero\Studio\RAD_VERSION\bin\</code> directory,
+so you must add it to the <code>PATH</code> system variable. The last action usually isn't required -
+the PATH has been updated during RAD Studio's installation.</p>
+<h3 id="executable-file-compression" tabindex="-1">Executable file compression</h3>
+<p>After build, the executable file's size is about 25 MB - not so much
+nowdays, but anyway, we compress it with the help of the program called
+<strong>upx</strong> . This step decreases size to approximately 11 MB - much better!</p>
+<h2 id="why-python" tabindex="-1">Why Python</h2>
+<p>Batch script is fine for builds, but we wanted to automate our database
+migrations - we were running them as raw SQL files by hands - and we
+started to search for a tool that can make this job for us.</p>
+<p>At that time, we  had been already using <a href="https://www.sphinx-doc.org">Sphinx</a> for
+documentation, which is written in Python, and it was already installed
+on our computers. Thus, to reduce
+the count of used technologies, we picked Python as the main
+language for automating our migrations.</p>
+<p>First way that we wanted to try is to keep writing our migrations in raw SQL
+and execute them in a some way with python. For this, we needed a driver for the
+Oracle database. Thanks to python popularity, it wasn't a problem -
+<a href="https://cx-oracle.readthedocs.io/en/latest/">cx_Oracle</a> is easy to
+install and it works well. But implementation of migrations
+requires a lot of work, such as keeping the
+history of changes and migrations' rollbacks. And we would these things should
+be automated. At that time, the history of schema changes had been implemented
+with the <code>migrations</code> table, where we were writing(by hands) the names
+of the SQL scripts.
+Rollback mechanism wasn't implemented at all - we were writing SQL for
+&quot;upgrading&quot; schema, but not for changes'
+rollbacks.
+Because of all these factors, we started to look for a migration tool,
+like <code>artisan migrate</code> for Laravel. The tool was found fast:
+<a href="https://alembic.sqlalchemy.org/en/latest/">alembic</a>, and after a few
+series of tests we approved it as our new migration tool.</p>
+<h2 id="automating-migrations-with-alembic" tabindex="-1">Automating migrations with alembic</h2>
+<p>Migrations are the changes to a database schema, like adding a column to a table, dropping
+or creating new tables, creating indexes and so on.
+Developers write migrations to be able to reproduce on a production database all changes
+that they made during development. We were writing migrations as raw SQL scripts,
+and then we were running them by hands in a IDE.
+Sometimes we needed to revert a few last changes in
+the database, and we had to write new migration scripts for
+that and run them by hands again.</p>
+<p>Alembic can, as any other migration tool, I believe, not only manage
+schema's upgrades, but also revert them. First thing you need to do is to
+install it on your system. It's better to follow the instructions from the
+<a href="https://alembic.sqlalchemy.org/en/latest/front.html#installation">official
+documentation</a>.
+After that, the only thing you need to make it work is to configure
+connection to your database. To do this, search for <code>sqlalchemy.url</code>
+parameter in the <code>alembic.ini</code> file and modify it according to your
+database settings. We use Oracle, and in our case it looks like
+<code>oracle://user:password@tnsstring</code>. Now, we can create our migrations:</p>
+<p>alembic revision -m &quot;Create orders table&quot;</p>
+<p>This command creates a migration file, like
+<code>1975ea83b712_create_orders_table.py</code>. It looks like this:</p>
+<p>&quot;&quot;&quot;create orders table</p>
+<p>Revision ID: 1975ea83b712
+Revises:
+Create Date: 2022-03-14 00:30:12.097402</p>
+<p>&quot;&quot;&quot;</p>
+<p># revision identifiers, used by Alembic.
+revision = '1975ea83b712'
+down_revision = None
+branch_labels = None</p>
+<p>from alembic import op
+import sqlalchemy as sa</p>
+<p>def upgrade():
+pass</p>
+<p>def downgrade():
+pass</p>
+<p>Here are two functions, <code>upgrade</code> and <code>downgrade</code>. The first one contains
+the code for running the migration and the second one is for reverting
+the migration. Alembic uses SQLAlchemy ORM to talk with a database, but
+we didn't want to learn another one language - we like SQL, - so we have
+changed the migrations’ template in a way that it run the queries that are
+represented as multiline strings. This is the example of the migration written in a such way:</p>
+<pre><code>&quot;&quot;&quot;Add new job code
+
+Revision ID: 51fcd3a1495a
+Revises: 569638f10ae3
+Create Date: 2022-02-28 14:27:18.470653
+
+&quot;&quot;&quot;
+from alembic import op
+import sqlalchemy as sa
+
+# revision identifiers, used by Alembic.
+revision = '51fcd3a1495a'
+down_revision = '569638f10ae3'
+branch_labels = None
+depends_on = None
+
+up = '''
+insert into user_jobs(job_code, description, enabled, job_name)
+values('DATEOFFS', 'Updates dates columns', 1, 'Job description')
+'''
+
+down = '''
+delete from user_jobs
+where job_code = 'DATEOFFS'
+'''
+
+def upgrade():
+    connection = op.get_bind()
+    connection.execute(up)
+
+
+def downgrade():
+    connection = op.get_bind()
+    connection.execute(down)
+</code></pre>
+<p>Alembic's template file is placed in the alembic's root directory, and it looks like this:</p>
+<pre><code>&quot;&quot;&quot;${message}
+
+Revision ID: ${up_revision}
+Revises: ${down_revision | comma,n}
+Create Date: ${create_date}
+
+&quot;&quot;&quot;
+from alembic import op
+import sqlalchemy as sa
+${imports if imports else &quot;&quot;}
+
+def compile_package(con, dir, name):
+    pck = open(f&quot;{dir}/{name}.pks&quot;, 'r', encoding=&quot;utf-8&quot;)
+    spec = pck.read()
+    pck.close()
+    pck = open(f&quot;{dir}/{name}.pkb&quot;, 'r', encoding=&quot;utf-8&quot;)
+    body = pck.read()
+    pck.close()
+
+    con.execute(spec)
+    con.execute(body)
+
+# revision identifiers, used by Alembic.
+revision = ${repr(up_revision)}
+down_revision = ${repr(down_revision)}
+branch_labels = ${repr(branch_labels)}
+depends_on = ${repr(depends_on)}
+
+up = '''
+
+'''
+
+down = '''
+
+'''
+
+def upgrade():
+    connection = op.get_bind()
+    connection.execute(up)
+    ${upgrades if upgrades else &quot;pass&quot;}
+
+
+def downgrade():
+    connection = op.get_bind()
+    connection.execute(down)
+    ${downgrades if downgrades else &quot;pass&quot;}
+</code></pre>
+<p>The <code>compile_package</code> procedure is used for packages compilation - I will
+tell about it in a while.</p>
+<h3 id="workflow-example" tabindex="-1">Workflow example</h3>
+<p>Let’s say we want to add a column <code>deleted_at</code> to the orders table for implementing  “soft delete” feature.
+It  means that  records actually are not being deleted, but
+instead <code>deleted_at</code> column is being filled with deletion’s date.
+New migrations are created by <code>alembic revision</code> command:</p>
+<pre><code>alembic revision -m &quot;Add deleted_at column to the orders table&quot;
+</code></pre>
+<p>Then, we need to write a SQL for adding the column, as well as its dropping:</p>
+<pre><code>&quot;&quot;&quot;Add deleted_at column to the orders table
+
+Revision ID: 51fcd3a1495a
+Revises: 569638f10ae3
+Create Date: 2022-02-28 13:24:18.200553
+
+&quot;&quot;&quot;
+from alembic import op
+import sqlalchemy as sa
+
+def compile_package(con, dir, name):
+    pck = open(f&quot;{dir}/{name}.pks&quot;, 'r', encoding=&quot;utf-8&quot;)
+    spec = pck.read()
+    pck.close()
+    pck = open(f&quot;{dir}/{name}.pkb&quot;, 'r', encoding=&quot;utf-8&quot;)
+    body = pck.read()
+    pck.close()
+
+    con.execute(spec)
+    con.execute(body)
+
+# revision identifiers, used by Alembic.
+revision = '51fcd3a1495a'
+down_revision = '569638f10ae3'
+branch_labels = None
+depends_on = None
+
+up = '''
+alter table orders add (
+    deleted_at date
+)
+'''
+
+down = '''
+alter table orders drop column deleted_at
+'''
+
+def upgrade():
+    connection = op.get_bind()
+    connection.execute(up)
+
+
+def downgrade():
+    connection = op.get_bind()
+    connection.execute(down)
+</code></pre>
+<p>When we want to run all unapplied migrations, we use <code>alembic upgrade head</code>:</p>
+<pre><code>$ alembic upgrade head
+INFO  [alembic.runtime.migration] Context impl OracleImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running upgrade d6b52f2ecdc1 -&gt; 5a65890ee7f3, Add deleted_at column to the orders table
+</code></pre>
+<p>To view migrations' history, <code>alembic history</code> command is used. This is the
+example of its output:</p>
+<pre><code>$ alembic history
+d6b52f2ecdc1 -&gt; 5a65890ee7f3 (head), Add deleted_at column to the orders table
+b946fd911cc2 -&gt; d6b52f2ecdc1, Increase order_num size
+51fcd3a1495a -&gt; b946fd911cc2, Create user_pref table
+569638f10ae3 -&gt; 51fcd3a1495a, Drop unused columns in orders table
+036b4e19a77c -&gt; 569638f10ae3, Set default value for created_at column
+&lt;base&gt; -&gt; 036b4e19a77c, Create some tables
+</code></pre>
+<p>View current revision:</p>
+<pre><code>$ alembic current
+</code></pre>
+<p>Run next one migration:</p>
+<pre><code>$ alembic upgrade +1
+</code></pre>
+<p>Revert last one migration:</p>
+<pre><code>$ alembic downgrade -1
+INFO  [alembic.runtime.migration] Context impl OracleImpl.
+INFO  [alembic.runtime.migration] Will assume non-transactional DDL.
+INFO  [alembic.runtime.migration] Running downgrade 5a65890ee7f3 -&gt; d6b52f2ecdc1, Add deleted_at column to the orders table
+</code></pre>
+<h3 id="limitations" tabindex="-1">Limitations</h3>
+<ul>
+<li>No need for <code>;</code> at the end of SQL command</li>
+<li>If migration requires more than one SQL command, you have to
+split them into separate calls - it seems like alembic can't execute
+SQL with multiple separated statements. Thus, migration with
+multiple statements appears to be like this:<pre><code>  &quot;&quot;&quot;Add deleted_at column to the orders table
+
+Revision ID: 51fcd3a1495a
+Revises: 569638f10ae3
+Create Date: 2022-02-28 13:24:18.200553
+
+&quot;&quot;&quot;
+from alembic import op
+import sqlalchemy as sa
+
+def compile_package(con, dir, name):
+    pck = open(f&quot;{dir}/{name}.pks&quot;, 'r', encoding=&quot;utf-8&quot;)
+    spec = pck.read()
+    pck.close()
+    pck = open(f&quot;{dir}/{name}.pkb&quot;, 'r', encoding=&quot;utf-8&quot;)
+    body = pck.read()
+    pck.close()
+
+    con.execute(spec)
+    con.execute(body)
+
+# revision identifiers, used by Alembic.
+revision = '51fcd3a1495a'
+down_revision = '569638f10ae3'
+branch_labels = None
+depends_on = None
+
+# Create table
+ct = '''
+alter table orders add (
+    deleted_at date
+)
+'''
+
+# Add column
+ac = '''
+alter table some_table
+add(
+    column_name number
+)
+'''
+
+# Drop table
+dt = '''
+alter table orders drop column deleted_at
+'''
+
+# Drop column
+dc = '''
+alter table some_table
+drop column column_name
+'''
+
+def upgrade():
+    connection = op.get_bind()
+    connection.execute(ct)
+    connection.execute(ac)
+
+def downgrade():
+    connection = op.get_bind()
+    connection.execute(dt)
+    connection.execute(dc)
+</code></pre>
+</li>
+</ul>
+<h2 id="recompiling-pl%2Fsql-packages" tabindex="-1">Recompiling PL/SQL packages</h2>
+<p>We recompile needed packages in migrations. For this,
+a helper function has been added to the migration template:</p>
+<pre><code>def compile_package(con, dir, name):
+    pck = open(f&quot;{dir}/{name}.pks&quot;, 'r', encoding=&quot;utf-8&quot;)
+    spec = pck.read()
+    pck.close()
+    pck = open(f&quot;{dir}/{name}.pkb&quot;, 'r', encoding=&quot;utf-8&quot;)
+    body = pck.read()
+    pck.close()
+
+    con.execute(spec)
+    con.execute(body)
+</code></pre>
+<p>We keep our packages under the version control and work with them
+by modifying corresponding files. Specification is stored in files with
+&quot;*.pks&quot; extension, and body files have &quot;*.pkb&quot; extension.</p>
+<p>Usually, implementation of a some feature don't affect much packages,
+so we are fine with this function. If you usually compile a lot of
+packages, it's better to add another one function that will accept
+a list of the filenames. Package files shouldn't contain a final slash
+in the source files, like this:</p>
+<p><strong>Will NOT be compiled</strong>:</p>
+<pre><code>create or replace package pck_test as
+
+-- Some code
+
+end pck_test;
+/
+</code></pre>
+<p><strong>Will be compiled</strong>:</p>
+<pre><code>create or replace package pck_test as
+
+-- Some code
+
+end pck_test;
+</code></pre>
+<p><strong>Note:</strong> Final semicolon, in the difference with SQL commands, is required.</p>
+<p>We create separate migration for packages compilation, but without
+any code in the <code>downgrade</code> function - &quot;uncompiling&quot; is not supported. Here is
+the part of such migration:</p>
+<pre><code>def upgrade():
+    connection = op.get_bind()
+    compile_package(connection, &quot;DB/packages&quot;, &quot;package_name_1&quot;)
+    compile_package(connection, &quot;DB/packages&quot;, &quot;package_name_2&quot;)
+    compile_package(connection, &quot;DB/packages&quot;, &quot;package_name_3&quot;)
+    pass
+
+
+def downgrade():
+    pass
+</code></pre>
+<h2 id="replacing-batch-file-with-python-script" tabindex="-1">Replacing batch file with Python script</h2>
+<p>Our first step was to implement the functionality of the batch script in python.
+We needed to make a bunch of calls to external programs, like in the batch script,
+and it is possible with <code>subprocess.run</code> function. In the batch script we had been
+executing <code>rsvars.bat</code> before build. This script setups environment variables,
+so we needed to make them visible for msbuild during its work.
+Luckily, the third parameter in <code>subprocess.run</code> is environment object, which serves exactly for this purpose.
+In our case, <code>rsvars.bat</code> looked like this:</p>
+<pre><code>@SET BDS=C:\Programs\Embarcadero\Studio\20.0
+@SET BDSINCLUDE=C:\Programs\Embarcadero\Studio\20.0\include
+@SET BDSCOMMONDIR=C:\Users\Public\Documents\Embarcadero\Studio\20.0
+@SET FrameworkDir=C:\Windows\Microsoft.NET\Framework\v4.0.30319
+@SET FrameworkVersion=v4.5
+@SET FrameworkSDKDir=
+@SET PATH=%FrameworkDir%;%FrameworkSDKDir%;C:\Programs\Embarcadero\Studio\20.0\bin;C:\Programs\Embarcadero\Studio\20.0\bin64;C:\Programs\Embarcadero\Studio\20.0\cmake;C:\Users\Public\Documents\Embarcadero\InterBase\redist\InterBase2020\IDE_spoof;%PATH%
+@SET LANGDIR=EN
+@SET PLATFORM=
+@SET PlatformSDK=
+</code></pre>
+<p>We placed all configuration parameters in the <code>config.ini</code> file, including these variables.
+When the script starts, it loads environment variables into an object and
+then passes it to <code>subprocess.run</code>. We didn't care much about clean and &quot;pythonic&quot;
+code - our goal was to make things done as fast as we can,
+and we finished up with these two scripts. All these files are located in the <code>build</code>
+directory in the project's root folder:</p>
+<p><strong><a href="http://buildconfig.py">buildconfig.py</a>:</strong></p>
+<pre><code>import configparser
+import os
+
+
+class BuildConfig():
+    def __init__(self, fname):
+        self.fname = fname
+
+        config = configparser.ConfigParser()
+        config.read(fname)
+
+        build_sec = config['build']
+        self.BDS = build_sec['BDS']
+        self.BDSINCLUDE = build_sec['BDSINCLUDE']
+        self.BDSCOMMONDIR=build_sec['BDSCOMMONDIR']
+        self.FrameworkDir=build_sec['FrameworkDir']
+        self.FrameworkVersion=build_sec['FrameworkVersion']
+        self.FrameworkSDKDir=build_sec['FrameworkSDKDir']
+        self.DOCSMAKE=build_sec['DOCSMAKE']
+        self.DOCSBUILDDIR=build_sec['DOCSBUILDDIR']
+        self.DOCSSOURCEDIR=build_sec['DOCSSOURCEDIR']
+        self.LANGDIR=build_sec['LANGDIR']
+        self.PLATFORM=build_sec['PLATFORM']
+        self.PlatformSDK=build_sec['PlatformSDK']
+        self.IDESPOOF = build_sec['IDESPOOF']
+
+        ftp_sec = config['ftp']
+        self.FTPHOST=ftp_sec['FTPHOST']
+        self.FTPUSER=ftp_sec['FTPUSER']
+        self.FTPPASSWORD=ftp_sec['FTPPASSWORD']
+        self.FTPDEST=ftp_sec['FTPDEST']
+        self.FTPDESTTEST=ftp_sec['FTPDESTTEST']
+
+        proj_sec = config['project']
+        self.PROJDIR = proj_sec['PROJDIR']
+        self.UPXPATH = proj_sec['UPXPATH']
+        self.EXECUTABLE = proj_sec['EXECUTABLE']
+
+    def build_env(self):
+        env = os.environ.copy()
+        env['BDS'] = self.BDS
+        env['BDSINCLUDE'] = self.BDSINCLUDE
+        env['BDSCOMMONDIR'] = self.BDSCOMMONDIR
+        env['FrameworkDir'] = self.FrameworkDir
+        env['FrameworkVersion'] = self.FrameworkVersion
+        env['FrameworkSDKDir'] = self.FrameworkSDKDir
+        env['PATH'] = self.FrameworkDir + &quot;;&quot; + self.BDS + r&quot;/bin;&quot; + self.BDS + r&quot;/bin64;&quot; + self.BDS + r'/cmake;' +\
+            f&quot;{self.IDESPOOF};&quot; + env['PATH']
+
+    return env
+</code></pre>
+<p><strong><a href="http://build.py">build.py</a>:</strong></p>
+<pre><code>import subprocess
+import os
+import ftplib
+import argparse
+import buildconfig
+
+def upload(exe, host, user, password, dest):
+    fserv = ftplib.FTP(host, user, password)
+    try:
+        fserv.cwd(dest)
+        with open(exe, &quot;rb&quot;) as file:
+            fserv.storbinary(f&quot;STOR {exe}&quot;, file)
+    finally:
+        fserv.quit()
+
+
+def main():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('--migrate', dest='migrate', help='Run migrations', action='store_true')
+    parser.add_argument('--compress', dest='compress', help='Compress exe file by UPX',  action='store_true')
+    parser.add_argument('--upload', dest='upload', help='Upload exe to FTP',  action='store_true')
+    parser.add_argument('--upload-test', dest='upload_test', help='Upload exe to FTP',  action='store_true')
+    parser.add_argument('--builddocs', dest='builddocs', help='Build documentation',  action='store_true')
+
+    args = parser.parse_args()
+
+    inipath = os.path.join(os.path.abspath(os.path.dirname(__file__)), 'config.ini')
+    config = buildconfig.BuildConfig(inipath)
+    env = config.build_env()
+
+    print(&quot;Building executable...&quot;, end=&quot;&quot;, flush=True)
+    os.chdir(config.PROJDIR)
+    subprocess.run([config.FrameworkDir + &quot;/MSBuild.exe&quot;, &quot;projectfile.dproj&quot;, r&quot;/p:config=Release&quot;, r&quot;/t:Build&quot;],stdout=subprocess.PIPE, env=env)
+    print(&quot;Done&quot;)
+
+    if args.compress:
+        print(&quot;Compressing...&quot;, end=&quot;&quot;, flush=True)
+        subprocess.run([f&quot;{config.UPXPATH}/upx.exe&quot;, f&quot;{config.EXECUTABLE}&quot;], stdout=subprocess.PIPE, check=True)
+        print(&quot;Done&quot;)
+
+    if args.migrate:
+        subprocess.run([&quot;alembic&quot;, &quot;upgrade&quot;, &quot;head&quot;], check=True)
+
+    if args.builddocs:
+        subprocess.run([config.DOCSMAKE, &quot;-M&quot;, &quot;html&quot;, config.DOCSSOURCEDIR, config.DOCSBUILDDIR])
+
+    if args.upload or args.upload_test:
+        host, user, password = config.FTPHOST, config.FTPUSER, config.FTPPASSWORD
+
+        if args.upload:
+            dest = config.FTPDEST
+        else:
+            dest = config.FTPDESTTEST
+
+        print(&quot;Uploading executable to FTP...&quot;, end=&quot;&quot;, flush=True)
+        upload(f&quot;{config.EXECUTABLE}&quot;, host, user, password, dest)
+        print(&quot;Done!&quot;)
+
+if __name__ == &quot;__main__&quot;:
+        main()
+</code></pre>
+<p>Configuration is kept in the <code>config.ini</code> file - here is an example of such
+file, but without any sensitive data:</p>
+<p><strong>config_example.ini</strong></p>
+<pre><code>    [build]
+
+    BDS= C:/Programs/Embarcadero/Studio/20.0
+    BDSINCLUDE=C:/Programs/Embarcadero/Studio/20.0/include
+    BDSCOMMONDIR=C:/Users/Public/Documents/Embarcadero/Studio/20.0
+    FrameworkDir=C:/Windows/Microsoft.NET/Framework/v4.0.30319
+    FrameworkVersion=v4.5
+    FrameworkSDKDir=
+    DOCSMAKE=sphinx-build
+    DOCSBUILDDIR=D://projDir/docs/build
+    DOCSSOURCEDIR=D://projDir/docs/source
+    LANGDIR=EN
+    PLATFORM=
+    PlatformSDK=
+    IDESPOOF=C:/Users/Public/Documents/Embarcadero/InterBase/redist/InterBase2020/IDE_spoof
+
+    [ftp]
+
+    FTPHOST=
+    FTPUSER=
+    FTPPASSWORD=
+    FTPDEST=FTP/PATH
+    FTPDESTTEST =FTP/PATH
+    [project]
+
+    PROJDIR = D://projDir/
+    UPXPATH = D://projDir/
+    EXECUTABLE=exefile.exe
+</code></pre>
+<p>All environment variables are located in the build group.
+The <code>project</code> section contains  paths to upx.exe, to the root of the project
+and the name of the executable file. The <code>ftp</code> group contains settings for FTP:
+connection and location for an executable file.
+We use the following command to run build:</p>
+<p>python build/build.py --compress --migrate --builddocs --upload</p>
+<p>List of options:</p>
+<ul>
+<li><code>compress</code> - compress exe file with upx</li>
+<li><code>migrate</code> - run migrations</li>
+<li><code>builddocs</code> - build documentation</li>
+<li><code>upload</code> - upload executable to FTP server</li>
+<li><code>upload-test</code> - upload executable to FTP server, but in another</li>
+</ul>
+<p>None of these command line flags are required. By default, <code>build.py</code>
+only builds an executable file.</p>
+<h2 id="what's-next%3F" tabindex="-1">What's next?</h2>
+<p>Described solution can't be called a good one. It's quick and dirty, it requires
+some grinding, but it works. Next step - relocate this process to Jenkins' instance.</p>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>

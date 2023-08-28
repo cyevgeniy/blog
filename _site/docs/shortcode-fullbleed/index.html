@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="Fullbleed shortcode" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/docs/shortcode-fullbleed/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        Fullbleed shortcode
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+			<a  class="nav__item " href="/docs/"> Documentation </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> Fullbleed shortcode</h1>
+        	
+
+            
+
+        	<p>Fullbleeds are blocks that occupy full width of the page,
+breaking the visual pattern and so grabbing user's attention.</p>
+<p>To add a full-bleed block, use the <code>{% fullbleed %}</code>
+shortcode. It accepts background color and <code>spaced</code> boolean
+flag, which adds some paddings to the block:</p>
+<pre><code>{% fullbleed &quot;yellow-soft&quot;, false %}
+{% container %}
+    # HELLO
+{% endcontainer %}
+{% endfullbleed %}
+</code></pre>
+<div class="bleed stack bg-yellow-soft ">
+<div class="container stack"><h1 id="hello" tabindex="-1">HELLO</h1>
+</div>
+</div>
+<p>You may have noticed that we were using another shortcode, called <code>container</code>.
+This container creates a block that is also centered as has the same width
+as the content block. Also this shortcode can render markdown inside itself,
+so you can write your content as usual:</p>
+<div class="bleed stack bg-blue-soft ">
+<div class="container stack"><h1 id="full-bleed-demo" tabindex="-1">Full bleed demo</h1>
+<p>You can use markdown inside container shortcode, and combining
+it with the fullbleed block is very cool.</p>
+<p><img src="/img/bender.png" alt="Bender"></p>
+<p>You can insert images, <strong>lists</strong>, cards, everything.</p>
+</div>
+</div>
+<p>This is the source for the full-bleed block above:</p>
+<pre><code class="language-markdown">{% fullbleed &quot;blue-soft&quot;, false %}
+{% container %}
+   # Full bleed demo
+
+    You can use markdown inside container shortcode, and combining
+    it with the fullbleed block is very cool.
+
+   ![Bender](/img/bender.png)
+
+   You can insert images, **lists**, cards, everything.
+{% endcontainer %}
+{% endfullbleed %}
+</code></pre>
+<h2 id="colors" tabindex="-1">Colors</h2>
+<div class="bleed stack bg-blue ">
+<div class="container stack"><h3 id="blue" tabindex="-1">Blue</h3>
+</div>
+</div>
+<div class="bleed stack bg-blue-soft ">
+<div class="container stack"><h3 id="blue-soft" tabindex="-1">Blue-soft</h3>
+</div>
+</div>
+<div class="bleed stack bg-yellow ">
+<div class="container stack"><h3 id="yellow" tabindex="-1">Yellow</h3>
+</div>
+</div>
+<div class="bleed stack bg-yellow-soft ">
+<div class="container stack"><h3 id="yellow-soft" tabindex="-1">Yellow-soft</h3>
+</div>
+</div>
+<div class="bleed stack bg-pink ">
+<div class="container stack"><h3 id="pink" tabindex="-1">Pink</h3>
+</div>
+</div>
+<div class="bleed stack bg-pink-soft ">
+<div class="container stack"><h3 id="pink-soft" tabindex="-1">Pink-soft</h3>
+</div>
+</div>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>

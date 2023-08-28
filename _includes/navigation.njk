@@ -1,0 +1,7 @@
+<div class="nav">
+	<div class="nav__items {% if (meta.centeredNavigation) %}nav__items--centered{% endif %}">
+		{%- for entry in collections.all | eleventyNavigation %}
+			<a  class="nav__item " href="{{ entry.url}}"> {{ entry.title }} </a>
+		{%- endfor %}
+	</div>
+</div>

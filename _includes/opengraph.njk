@@ -1,0 +1,11 @@
+<meta property="og:title" content="{{title | escape}}" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="{{meta.locale}}" />
+<meta property="og:url" content="{{meta.siteURL}}{{page.url}}" />
+{% if (image) %}
+  <meta property="og:image" content="{{meta.siteURL}}{{image}}" />
+{% endif %}
+
+{% if (description) %}
+  <meta property="og:description" content="{{description | escape}}" />
+{% endif %}

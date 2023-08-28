@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html>
+  <head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+            <meta property="og:title" content="Let&#39;s write a Vue component - Input" />
+<meta property="og:type" content="article" />
+<meta property="og:locale" content="en_US" />
+<meta property="og:url" content="https://ychbn.com/blog/lwvc-input/" />
+
+
+
+
+	<link rel="stylesheet" type="text/css" href="/bundle/FR2Cbd8xic.css">
+
+	<title>
+      
+        Let&#39;s write a Vue component - Input
+      
+
+    </title>
+  </head>
+  <body>
+	
+<div class="page-container">
+    <div>
+        
+
+        <div class="nav">
+	<div class="nav__items ">
+			<a  class="nav__item " href="/"> Home </a>
+			<a  class="nav__item " href="/blog/"> Blog </a>
+	</div>
+</div>
+
+        <div class="container stack">
+        	
+        		<h1> Let&#39;s write a Vue component - Input</h1>
+        	
+
+            
+        		<h2>Table of contents</h2>
+        			<nav class="toc">
+                <ol>
+                    
+                    <li><a href="#stack">Stack</a>
+            		</li>
+
+                    <li><a href="#what-we-want-to-create">What we want to create</a>
+            		</li>
+
+                    <li><a href="#base-wrapper">Base wrapper</a>
+            		</li>
+
+                    <li><a href="#label-and-error-label">Label and Error label</a>
+            		</li>
+
+                    <li><a href="#disabled-state">Disabled state</a>
+            		</li>
+
+                    <li><a href="#add-some-styling">Add some styling</a>
+            		</li>
+
+                    <li><a href="#icons">Icons</a>
+            		</li>
+
+                    <li><a href="#testing">Testing</a>
+            
+                <ol>
+                    
+                    <li><a href="#install-vue-test-utils-and-vitest">Install vue-test-utils and vitest</a>
+            		</li>
+
+                    <li><a href="#first-test">First test</a>
+            		</li>
+
+                    <li><a href="#label">Label</a>
+            		</li>
+
+                    <li><a href="#error-label">Error label</a>
+            		</li>
+
+                    <li><a href="#disabled-state-1">Disabled state</a>
+            		</li>
+
+                    <li><a href="#modelvalue-update">modelValue update</a>
+            		</li>
+                </ol>
+            		</li>
+                </ol>
+            </nav>
+            
+
+        	<h2 id="stack" tabindex="-1">Stack</h2>
+<p>We will use these packages:</p>
+<ul>
+<li><a href="https://vitejs.dev/">Vite</a></li>
+<li><a href="https://vuejs.org/">Vue 3</a></li>
+<li><a href="https://tailwindcss.com/">Tailwind CSS</a></li>
+<li><a href="https://vitest.dev">Vitest</a></li>
+<li><a href="https://test-utils.vuejs.org">Vue test utils</a></li>
+</ul>
+<p>You can create a starter project with Vite easily:</p>
+<pre><code>npm create vite@latest base-input-component -- --template vue-tsc
+</code></pre>
+<p>If you have any troubles, checkout the &quot;Getting started&quot; section in the
+<a href="https://vitejs.dev/guide/">docs</a>.</p>
+<h2 id="what-we-want-to-create" tabindex="-1">What we want to create</h2>
+<p>We're going to create a simple component which will wrap
+input element and provide some useful features that we almost
+always want from the input field in any form. It will have:</p>
+<ul>
+<li>A label that will be displayed above the input field</li>
+<li>An input element itself</li>
+<li>An error label, so we can display error message for the field</li>
+</ul>
+<h2 id="base-wrapper" tabindex="-1">Base wrapper</h2>
+<p>First of all, let's just wrap an input element in a component.
+Create a <code>BaseInput.vue</code> file in the <code>components</code> directory.</p>
+<p><em>BaseInput.vue</em>:</p>
+<pre><code>&lt;script setup lang=&quot;ts&quot;&gt;
+withDefaults(defineProps&lt;{
+  modelValue?: string
+}&gt;(), {
+  modelValue: ''
+})
+
+const emit = defineEmits&lt;{
+  (evt: 'update:modelValue', val: string): void
+}&gt;()
+
+function onInput(e: Event) {
+  const target = e.target as HTMLInputElement
+
+  emit('update:modelValue', target.value)
+}
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;input
+    :value=&quot;modelValue&quot;
+    type=&quot;text&quot;
+    @input=&quot;onInput&quot;
+  &gt;
+&lt;/template&gt;
+</code></pre>
+<p>Now I'll explain what we have donein the code above.</p>
+<p>Our component have only one single input element for now:</p>
+<pre><code>&lt;input
+  :value=&quot;modelValue&quot;
+  type=&quot;text&quot;
+  @input=&quot;onInput&quot;
+&gt;
+</code></pre>
+<p>What we want is to use our BaseInput like this:</p>
+<pre><code>const inputText = ref('')
+...
+&lt;BaseInput
+  v-model=&quot;inputText&quot;
+/&gt;
+</code></pre>
+<p>So when we change the value of the <code>inputText</code> variable,
+the input field reflects to them, and when the input's
+value is changed, the <code>inputText</code> variable is synced with the typed text.</p>
+<p>To do so, we need to know how <code>v-model</code> directive works in Vue.
+There'is a <a href="https://vuejs.org/guide/components/v-model.html">dedicated page</a>
+in the docs for this.</p>
+<p>We bind component's <code>modelValue</code> to the input's value,
+so everytime when <code>modelValue</code> is changed, input's
+text will be in sync with it. Besides this, we need to
+update <code>modelValue</code> when the text in the input field is changed
+by the user. Since <strong>component's props are immutable</strong>, we
+can't directly update <code>modelValue</code>. Instead, we emit
+<code>update:modelValue</code> event with the text in the input field.
+This code is iside <code>onInput</code> function:</p>
+<pre><code>function onInput(e: Event) {
+  const target = e.target as HTMLInputElement
+
+  emit('update:modelValue', target.value)
+}
+</code></pre>
+<p>To be able to emit events, we should declare each of
+them:</p>
+<pre><code>const emit = defineEmits&lt;{
+  (evt: 'update:modelValue', val: string): void
+}&gt;()
+</code></pre>
+<p><strong>There are important things you should understand now</strong>:</p>
+<ol>
+<li>You cannot modify component's props</li>
+<li>When you use a component with <code>v-model=&quot;val&quot;</code> pattern, it's actually
+expanded by Vue to the <code>:modelValue=&quot;val&quot;</code> and <code>@update:modelValue=&quot;e =&gt; val = e&quot;</code></li>
+</ol>
+<p><em>App.vue</em>:</p>
+<pre><code>&lt;script setup lang=&quot;ts&quot;&gt;
+import { ref, watchEffect } from 'vue'
+import BaseInput from './components/BaseInput.vue'
+
+const text = ref('')
+
+// For demonstration only
+watchEffect(() =&gt; {
+  console.log(text.value)
+})
+&lt;/script&gt;
+
+&lt;template&gt;
+  &lt;div&gt;
+    &lt;BaseInput v-model=&quot;text&quot; /&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+<p>This code is pretty straightforward - we import required dependencies,
+creating a ref that will serve as a <code>v-model</code>, and use
+<code>watchEffect</code> for demonstration of how our v-model is being changed - you
+can open a dev console and see the logs of <code>text</code>'s values.</p>
+<h2 id="label-and-error-label" tabindex="-1">Label and Error label</h2>
+<p>Now let's add a field label, and a label for the error message.
+We will pass them as props, so first thing we can do is to declare them:</p>
+<pre><code>withDefaults(defineProps&lt;{
+  modelValue?: string
+  label?: string
+  error?: string
+}&gt;(), {
+  modelValue: ''
+})
+</code></pre>
+<p>We made them optional, so we have to keep in mind that
+if they're optional, we should correctly handle the cases when
+a value for one of these fields isn't provided. For labels in an
+input component, it's ok just to hide them:</p>
+<pre><code>&lt;template&gt;
+  &lt;div&gt;
+    &lt;span
+      v-show=&quot;label&quot;
+      class=&quot;block text-sm mb-1&quot;
+    &gt;
+      
+    &lt;/span&gt;
+    &lt;input
+      :value=&quot;modelValue&quot;
+      type=&quot;text&quot;
+      @input=&quot;onInput&quot;
+    &gt;
+    &lt;span
+      v-show=&quot;error&quot;
+      class=&quot;block text-pink-500 text-sm mt-1&quot;
+    &gt;
+      
+    &lt;/span&gt;
+  &lt;/div&gt;
+&lt;/template&gt;
+</code></pre>
+<p>Please note how we've added a gaps between an input and labels - top label has
+<code>margin-bottom</code> property, and bottom label has the <code>margin-top</code> property, so when
+one of the labels is hidden, the gap disappeares. If we had applied <code>margin-top</code>
+and <code>margin-bottom</code> properties to the input element itself, the gaps still would have
+been in the component. We also used a <em>block</em> class to make our spans act like a
+block DOM node. Another possible solution here is to use flexbox.</p>
+<h2 id="disabled-state" tabindex="-1">Disabled state</h2>
+<p>To make an input field disabled, we'll just set corresponding html attribute
+in the input field:</p>
+<pre><code>withDefaults(defineProps&lt;{
+  modelValue?: string
+  label?: string
+  error?: string
+  disabled?: boolean
+}&gt;(), {
+  modelValue: '',
+  disabled: false,
+})
+</code></pre>
+<pre><code>&lt;input
+  :value=&quot;modelValue&quot;
+  type=&quot;text&quot;
+  :disabled=&quot;disabled&quot;
+  @input=&quot;onInput&quot;
+&gt;
+</code></pre>
+<h2 id="add-some-styling" tabindex="-1">Add some styling</h2>
+<p>Let's make input field more attractive:</p>
+<pre><code>&lt;input
+  class=&quot;focus:ring-2 focus:ring-blue-300
+    focus:outline-none border border-slate-200
+    rounded&quot;
+  :value=&quot;modelValue&quot;
+  type=&quot;text&quot;
+  :disabled=&quot;disabled&quot;
+  @input=&quot;onInput&quot;
+&gt;
+</code></pre>
+<p>Utility classes were splitted into multiple lines for the sake of readability on this website. Usually you
+write these classes in a single line.</p>
+<p>Now our component look like this:</p>
+<p><img src="/img/lwvc-input/base-input-1.png" alt="Base input component"></p>
+<h2 id="icons" tabindex="-1">Icons</h2>
+<p>Now we're going to add support for icons inside our input component.
+Those icons will help a user to recognize the purpose of the field.
+There're a few possible ways to add icons, but we will use slots.
+Our icon should be inside an input field, and we'll use absolute
+positioning for this. Since part of the input field will be
+overlapped with the icon, we need to &quot;shift&quot; the place where
+typing starts if the slot for the icon is not empty, and remove
+this shift when icon is not provided.</p>
+<p>This is modified version of our input field. It's a replacement for
+<code>&lt;input...</code> tag:</p>
+<pre><code>&lt;div class=&quot;relative&quot;&gt;
+  &lt;input
+    class=&quot;focus:ring-2 focus:ring-blue-300
+      focus:outline-none border border-slate-200
+      rounded text-sm&quot;
+    :class=&quot;[$slots.prepend ? 'pl-6' : '']&quot;
+    :value=&quot;modelValue&quot;
+    type=&quot;text&quot;
+    :disabled=&quot;disabled&quot;
+    @input=&quot;onInput&quot;
+  &gt;
+  &lt;div class=&quot;absolute left-0 top-0 h-full p-1 flex items-center justify-center&quot;&gt;
+    &lt;div class=&quot;h-4 w-4&quot;&gt;
+      &lt;slot name=&quot;prepend&quot; /&gt;
+    &lt;/div&gt;
+  &lt;/div&gt;
+&lt;/div&gt;
+</code></pre>
+<p>Let's break it down.</p>
+<p>First of all, we wrapped our input tag in a <code>div</code> which has relative
+positioning. Inside this container, we have an input field and another
+one div block, but this time with absolute positioning. This absolute
+block has <code>left-0</code>, <code>top-0</code> and <code>h-full</code> classes. It means that the top side
+of this block will be at the same position as the top side of its parent with
+relative positioning. Same for its left side. <code>h-full</code> class stretches block's
+height to the 100% of the parent. If you don't undestand, I've got you covered,
+here's an illustration of how it's work:</p>
+<p><img src="/img/lwvc-input/input-icon-explanation.png" alt="Explanation of absolute positioning"></p>
+<p>Icon should be verticaly centered inside the input field, and it's the same
+as to center an icon inside the absolute positioned block (blue). For this,
+we turned this div into a flexbox container and added another one div with fixed height and width inside.
+This div is centered vertically, and it is the container for our icon, which ideally should
+have the same width and height. Inside this div we've added a named slot.</p>
+<p>Now let's look closer at the input element. Besides static CSS classes, we use
+this one: <code>:class=&quot;[$slots.prepend ? 'pl-6' : '']&quot;</code>. This class adds left padding
+<strong>when prepend icon is presented</strong>, so text in the input won't be overlapped with
+an icon.</p>
+<p>This is how we can add an icon:</p>
+<pre><code>&lt;BaseInput label=&quot;Real name&quot; error=&quot;max length is 20&quot; v-model=&quot;text&quot; class=&quot;m-2&quot;&gt;
+      &lt;template v-slot:prepend&gt;
+        &lt;svg
+          class=&quot;w-4 h-4 text-gray-500 dark:text-gray-400&quot;
+          aria-hidden=&quot;true&quot;
+          xmlns=&quot;http://www.w3.org/2000/svg&quot;
+          fill=&quot;currentColor&quot;
+          viewBox=&quot;0 0 20 16&quot;
+        &gt;
+          &lt;path d=&quot;m10.036 8.278 9.258-7.79A1.979 1.979 0 0 0 18 0H2A1.987 1.987 0 0 0 .641.541l9.395 7.737Z&quot;/&gt;
+          &lt;path d=&quot;M11.241 9.817c-.36.275-.801.425-1.255.427-.428 0-.845-.138-1.187-.395L0 2.6V14a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2V2.5l-8.759 7.317Z&quot;/&gt;
+        &lt;/svg&gt;
+      &lt;/template&gt;
+    &lt;/BaseInput&gt;
+</code></pre>
+<p>And this is how our component look now:</p>
+<p><img src="/img/lwvc-input/base-input-2.png" alt="base input component"></p>
+<p><em>Yes, I know, I used a wrong icon, but it's not so important here.</em></p>
+<h2 id="testing" tabindex="-1">Testing</h2>
+<p>Usually tests are being written in parallel with component implementation - you
+write test for a specific testcase, it falls because the feature isn't implemented
+yet, and then you make the testcase pass by implementig the feature in the component.
+We'll use <a href="https://vitest.dev">vitest</a> and <a href="https://test-utils.vuejs.org">vue-test-utils</a>
+for testing.</p>
+<h3 id="install-vue-test-utils-and-vitest" tabindex="-1">Install vue-test-utils and vitest</h3>
+<p>Install vue-test-utils:</p>
+<pre><code>npm install --save-dev @vue/test-utils
+</code></pre>
+<p>And vitest:</p>
+<pre><code>npm install -D vitest
+</code></pre>
+<h3 id="first-test" tabindex="-1">First test</h3>
+<p>Usually tests have <code>.spec.ts</code> or <code>.test.ts</code> extension, while the filename
+is the same as the filename of the tested component/module. We will use <code>.spec.ts</code>.</p>
+<p>First, create the <code>BaseInput.spec.ts</code> file with this content:</p>
+<pre><code>import { describe, it, expect } from 'vitest'
+import { mount } from '@vue/test-utils'
+import BaseInput from './BaseInput.vue'
+
+describe('BaseInput component', () =&gt; {
+  it('is rendered', () =&gt; {
+    const wrapper = mount(BaseInput)
+
+
+    expect(wrapper.find('[data-test=&quot;input-wrapper&quot;]').exists()).toBe(true)
+  })
+})
+</code></pre>
+<p>The most interesting part here is how we're trying to check whether our component is
+rendered. We search a DOM node by &quot;data-test&quot; attribute. Because we didn't
+add any &quot;data&quot; attributes to the component's layout, we need to fix that:</p>
+<p><em>BaseInput.vue</em>:</p>
+<pre><code>&lt;template&gt;
+  &lt;div data-test=&quot;input-wrapper&quot;&gt;
+</code></pre>
+<p><em>Wrapper has <a href="https://test-utils.vuejs.org/api/#wrapper-methods">a lot</a> of
+methods which may be useful for testing. It's  also highly recommended to
+go through <a href="https://test-utils.vuejs.org/guide/essentials/a-crash-course.html">a crash course</a>
+to get familiar with main concepts of testing with vue test utils.</em></p>
+<p>Now, it's time to run our test. All we need to do is just run
+vitest:</p>
+<pre><code>npx vitest
+</code></pre>
+<p>Sadly, vitest throws an &quot;ReferenceError: document is not defined&quot; error.
+To be able to test components, vitest should somehow emulate browser's
+behaviour, and we can choose from <a href="https://vitest.dev/guide/environment.html#test-environment">a few possible options</a>.
+We'll use &quot;jsdom&quot; package, so our <code>vite.config.ts</code> should be like this:</p>
+<pre><code>import { defineConfig } from 'vite'
+import Vue from '@vitejs/plugin-vue'
+
+export default defineConfig({
+  plugins: [
+    Vue(),
+  ],
+  test: {
+    globals: true,
+    environment: 'jsdom',
+  },
+})
+</code></pre>
+<p>After execution of the <code>vitest</code> command we will be promted to
+install jsdom package. Press &quot;y&quot; and enjoy our first passing test!</p>
+<p><img src="/img/lwvc-input/test-1.png" alt="First passed test screenshot"></p>
+<h3 id="label" tabindex="-1">Label</h3>
+<p>When the label is empty, it should be hidden:</p>
+<pre><code>it('hides the label if it is empty', () =&gt; {
+  const wrapper = mount(BaseInput, {
+    props: {
+      label: '',
+    }
+  })
+
+
+  expect(wrapper.find('[data-test=&quot;input-label&quot;]').isVisible()).toBe(false)
+})
+</code></pre>
+<p><strong>ATTENTION!!!</strong> We hide input label with <code>v-show</code> directive, which adds
+<code>display:none</code> CSS style to the element, but it's still exists in the DOM tree.
+Therefore, we use <code>isVisible</code> method, and not <code>exists</code>.</p>
+<h3 id="error-label" tabindex="-1">Error label</h3>
+<p>Error label should be hidden if not provided:</p>
+<pre><code>it('Error label should be hidden when not provided', () =&gt; {
+  const wrapper = mount(BaseInput)
+
+
+  expect(wrapper.find('[data-test=&quot;input-error&quot;]').isVisible()).toBe(false)
+})
+</code></pre>
+<p>Error label is visible when the <code>props.error</code> is provided:</p>
+<pre><code>it('Error label is visible when provided', () =&gt; {
+  const wrapper = mount(BaseInput, {
+    props: {
+      error: 'error label',
+    }
+  })
+
+
+  expect(wrapper.find('[data-test=&quot;input-error&quot;]').text()).toBe('error label')
+})
+</code></pre>
+<h3 id="disabled-state-1" tabindex="-1">Disabled state</h3>
+<p>When our input component is disabled, it shouldn't update
+our modelValue and also the input element must have a disabled attribute.</p>
+<pre><code>it('is disabled when props.disabled is true', async () =&gt; {
+  const wrapper = mount(BaseInput, {
+    props: {
+      modelValue: '',
+      'onUpdate:modelValue': (e) =&gt; wrapper.setProps({ modelValue: e }),
+      disabled: true,
+    }
+  })
+
+  await wrapper.get('[data-test=&quot;input-field&quot;]').setValue('text')
+  expect(wrapper.props('modelValue')).toBe('')
+})
+</code></pre>
+<h3 id="modelvalue-update" tabindex="-1">modelValue update</h3>
+<p>V-model's value is displayed in the input field from the start:</p>
+<pre><code>it('set input text as in modelValue', () =&gt; {
+  const wrapper = mount(BaseInput, {
+    props: {
+      modelValue: 'text',
+    }
+  })
+
+  wrapper.find('[data-test=&quot;input-field&quot;]').element
+  expect((wrapper.find('[data-test=&quot;input-field&quot;]').element as HTMLInputElement).value).toBe('text')
+})
+</code></pre>
+<p>Binded <code>v-model</code> is updated when text is changed in the
+input field:</p>
+<pre><code>it('modelValue is updated with input text', async () =&gt; {
+  const wrapper = mount(BaseInput, {
+    props: {
+      modelValue: '',
+      'onUpdate:modelValue': (e) =&gt; wrapper.setProps({ modelValue: e })
+    }
+  })
+
+  await wrapper.get('[data-test=&quot;input-field&quot;]').setValue('text')
+  expect(wrapper.props('modelValue')).toBe('text')
+})
+</code></pre>
+<p>Important thing here is that we should wait for <code>setValue</code> execution,
+so DOM is updated before our next assertions.
+Read more <a href="https://test-utils.vuejs.org/api/#setvalue">here</a>.</p>
+
+        </div>
+    </div>
+    <div class="footer-container">
+        <div class="footer">
+	<div class="container">
+		2023
+	</div>
+</div>
+    </div>
+</div>
+
+  </body>
+</html>
