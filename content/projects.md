@@ -10,6 +10,7 @@ eleventyNavigation:
 #### Vue
 
 - [Vue-ldemort](https://github.com/cyevgeniy/vue-ldemort). Basic Vue component for creating multi-step workflows. Inspired by react-albus
+- [Vue-hoogle](https://vue-hoogle.netlify.app/). Alternative interface for [hoogle](https://hoogle.haskell.org/).
 
 #### CLI
 
